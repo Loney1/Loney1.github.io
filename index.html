@@ -73,6 +73,190 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Goroutine-state" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/10/07/Goroutine-state/" class="article-date">
+  <time class="dt-published" datetime="2021-10-07T11:36:41.648Z" itemprop="datePublished">2021-10-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2021/10/07/Goroutine-state/">Goroutine state</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h3 id="goroutine-的状态一共有-9-种，有兴趣的小伙伴可以了解。如下："><a href="#goroutine-的状态一共有-9-种，有兴趣的小伙伴可以了解。如下：" class="headerlink" title="goroutine 的状态一共有 9 种，有兴趣的小伙伴可以了解。如下："></a>goroutine 的状态一共有 9 种，有兴趣的小伙伴可以了解。如下：</h3><table>
+<thead>
+<tr>
+<th align="left">状态</th>
+<th align="left">含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">_Gidle</td>
+<td align="left">刚刚被分配，还没有进行初始化。</td>
+</tr>
+<tr>
+<td align="left">_Grunnable</td>
+<td align="left">已经在运行队列中，还没有执行用户代码。</td>
+</tr>
+<tr>
+<td align="left">_Grunning</td>
+<td align="left">不在运行队列里中，已经可以执行用户代码，此时已经分配了 M 和 P。</td>
+</tr>
+<tr>
+<td align="left">_Gsyscall</td>
+<td align="left">正在执行系统调用，此时分配了 M。</td>
+</tr>
+<tr>
+<td align="left">_Gwaiting</td>
+<td align="left">在运行时被阻止，没有执行用户代码，也不在运行队列中，此时它正在某处阻塞等待中。</td>
+</tr>
+<tr>
+<td align="left">_Gmoribund_unused</td>
+<td align="left">尚未使用，但是在 gdb 中进行了硬编码。</td>
+</tr>
+<tr>
+<td align="left">_Gdead</td>
+<td align="left">尚未使用，这个状态可能是刚退出或是刚被初始化，此时它并没有执行用户代码，有可能有也有可能没有分配堆栈。</td>
+</tr>
+<tr>
+<td align="left">_Genqueue_unused</td>
+<td align="left">尚未使用。</td>
+</tr>
+<tr>
+<td align="left">_Gcopystack</td>
+<td align="left">正在复制堆栈，并没有执行用户代码，也不在运行队列中。</td>
+</tr>
+</tbody></table>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/10/07/Goroutine-state/" data-id="ckugvc86r0001qwvo2md4ec96" data-title="Goroutine state" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-Cheer" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/10/07/Cheer/" class="article-date">
+  <time class="dt-published" datetime="2021-10-07T11:23:40.674Z" itemprop="datePublished">2021-10-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2021/10/07/Cheer/">Cheer</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>Today，I finally have a blog which is meaningful for me. </p>
+<h2 id="Step"><a href="#Step" class="headerlink" title="Step"></a>Step</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/10/07/Cheer/" data-id="ckugvc86t0002qwvo6jxw4zdc" data-title="Cheer" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-Lone" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/10/07/Lone/" class="article-date">
+  <time class="dt-published" datetime="2021-10-07T10:41:47.596Z" itemprop="datePublished">2021-10-07</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2021/10/07/Lone/">Lone</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>Today，I finally have a blog which is meaningful for me. </p>
+<h2 id="Step"><a href="#Step" class="headerlink" title="Step"></a>Step</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2021/10/07/Lone/" data-id="ckugvc86l0000qwvogveu2aa8" data-title="Lone" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2021/10/07/hello-world/" class="article-date">
@@ -112,7 +296,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2021/10/07/hello-world/" data-id="ckugtwwch000068voguo3ae22" data-title="Hello World" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2021/10/07/hello-world/" data-id="ckugvc86u0003qwvobf3l4liu" data-title="Hello World" class="article-share-link">Share</a>
       
       
       
@@ -153,6 +337,18 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2021/10/07/Goroutine-state/">Goroutine state</a>
+          </li>
+        
+          <li>
+            <a href="/2021/10/07/Cheer/">Cheer</a>
+          </li>
+        
+          <li>
+            <a href="/2021/10/07/Lone/">Lone</a>
+          </li>
         
           <li>
             <a href="/2021/10/07/hello-world/">Hello World</a>
