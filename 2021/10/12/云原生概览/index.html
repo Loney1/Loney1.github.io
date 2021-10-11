@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Lone">
+
+
+
+    <meta name="description" content="This is a blog which is order to record my learning and growth">
+
+
+
+<title>云原生概览 | Loney1</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Loney1&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Loney1&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">云原生概览</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Lone</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">October 12, 2021&nbsp;&nbsp;0:09:48</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="1、云原生-Cloud-Native-的定义"><a href="#1、云原生-Cloud-Native-的定义" class="headerlink" title="1、云原生(Cloud Native)的定义"></a>1、云原生(Cloud Native)的定义</h2><h3 id="1-1、简介"><a href="#1-1、简介" class="headerlink" title="1.1、简介"></a>1.1、简介</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">随着k8s的崛起，互联网正式进入云原生时代，国内也是百花齐放，各类云也是层出不穷，但是总有一个疑问围绕着我们，那就是到底什么是云原生呢？云原生正处于一个发展阶段，每个人对它都不同的理解, 那到底什么是云原生? 笔者查阅多重资料, 具体整理如下</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-2、Pivotal-最初的定义"><a href="#1-2、Pivotal-最初的定义" class="headerlink" title="1.2、Pivotal 最初的定义"></a>1.2、Pivotal 最初的定义</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">2015年 Pivotal 公司的 Matt Stine 写了一本 迁移到云原生应用架构, 其中介绍了并探讨了云原生应用架构的几个主要特征:</span><br><span class="line">1、符合 12 因素应用</span><br><span class="line">2、面向微服务架构</span><br><span class="line">3、自服务敏捷架构</span><br><span class="line">4、基于 API 的协作</span><br><span class="line">5、抗脆弱性</span><br></pre></td></tr></table></figure>
+
+<h3 id="1-3、CNCF-Cloud-Native-Computing-Foundation-的定义"><a href="#1-3、CNCF-Cloud-Native-Computing-Foundation-的定义" class="headerlink" title="1.3、CNCF (Cloud Native Computing Foundation) 的定义"></a>1.3、CNCF (Cloud Native Computing Foundation) 的定义</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">首先看一下起初CNCF(Cloud Native Computing Foundation)对云原生的定义：</span><br><span class="line">主要包含三个方面：应用容器化、面向微服务架构、应用支持容器的编排调度</span><br><span class="line"></span><br><span class="line">随着云原生生态的不断发展, CNCF对云原生目前的定义如下</span><br><span class="line">“云原生技术有利于各组织在公有云、私有云和混合云等新型动态环境中, 构建和运行可弹性扩展的应用.云原生的代表技术包括容器、服务网格、微服务、不可变基础设施和声明式API. (Cloud native technologies empower organizations to build and run scalable applications in modern, dynamic environments such as public, private, and hybrid clouds. Containers, service meshes, microservices, immutable infrastructure, and declarative APIs exemplify this approach.)</span><br><span class="line">这些技术能够构建容错性好、易于管理和便于观察的松耦合系统. 结合可靠的自动化手段, 云原生技术使工程师能够轻松地对系统作出频繁和可预测的重大变更.(These techniques enable loosely coupled systems that are resilient, manageable, and observable. Combined with robust automation, they allow engineers to make high-impact changes frequently and predictably with minimal toil.)”</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="1-4、其他大牛的定义"><a href="#1-4、其他大牛的定义" class="headerlink" title="1.4、其他大牛的定义"></a>1.4、其他大牛的定义</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">Holly Cummins于2021年3月18日发布的关于云原生的文章:</span><br><span class="line">云原生关乎文化, 而不是容器</span><br><span class="line">不需要一味的微服务, 就可以做到非常的云原生.</span><br><span class="line">在开始云原生转型之前, 必须明确云原生对你的团队意味着什么, 以及要解决的真正问题是什么.</span><br><span class="line">如果发布涉及繁琐的仪式, 不经常发布, 而且所有的微服务都必须同时发布, 那么微服务架构的好处将无法得到落实.</span><br><span class="line">持续集成和部署是你要做的事情, 而不是你买的工具.</span><br><span class="line">过度的治理扼杀了云的效率, 但如果你对消耗的东西不够重视, 就会造成严重的浪费.</span><br><span class="line"></span><br><span class="line">Joe Beda，Heptio 的CTO:</span><br><span class="line">Cloud Native 并没有硬性和牢靠的定义. 实际上, 还有其他重叠的术语和意识形态. 从根本上说, Cloud Native正在构建团队, 文化和技术, 以利用自动化和架构来管理复杂性和解锁速度.</span><br><span class="line">我们还处在这个旅程的开始阶段</span><br><span class="line"></span><br><span class="line">Christian Posta:</span><br><span class="line">“云原生”是一个形容词, 用于描述应用, 结构, 平台/基础设施和流程, 这些共同促使我们以比较经济的工作方式来提高能力, 实现快速响应变化和减少不可预测性. 包括服务架构. 自助服务基础设施, 自动化, 持续集成/交付管道, 可观察性工具, 实验的自由/责任 ,坚持结果而不是产出的团队等.</span><br></pre></td></tr></table></figure>
+
+<h2 id="2、Borg、Omega-和-K8s-的诞生"><a href="#2、Borg、Omega-和-K8s-的诞生" class="headerlink" title="2、Borg、Omega 和 K8s 的诞生"></a>2、Borg、Omega 和 K8s 的诞生</h2><h3 id="2-1、Borg"><a href="#2-1、Borg" class="headerlink" title="2.1、Borg"></a>2.1、Borg</h3><p>相信很多人对Borg并不熟悉, 但是k8s起源于Borg, 它是谷歌内部大规模集群管理系统, 负责对谷歌内部很多核心服务的调度和管理. Borg的目的是让用户能够不必操心资源管理的问题, 让他们专注于自己的核心业务, 并且做到跨多个数据中心的资源利用率最大化.</p>
+<p>Borg主要由 BorgMaster、Borglet、borgcfg 和 Scheduler 组成, 如下图所示<br><img src="/images/Cloud/1.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">BorgMaster 是整个集群的大脑, 负责维护整个集群的状态, 并将数据持久化到 Paxos 存储中去</span><br><span class="line">Borglet 负责真正运行的任务(在容器中)</span><br><span class="line">brogcfg 是 Borg 的命令行工具, 用于跟 Borg系统交互, 一般通过一个配置文件来提交任务</span><br><span class="line">Scheduler 负责任务的调度, 根据应用的特点将其调度到具体的机器上去</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-2、Omega"><a href="#2-2、Omega" class="headerlink" title="2.2、Omega"></a>2.2、Omega</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">说实话, 笔者在查阅资料之前也不知道Google还有个Omega, 而它是Google第二套容器管理系统, 作为Borg的延伸, 它的出现是用于提升Borg 生态系统软件工程的愿望. 它被应用到了很多在 Borg 内已经被认证的成功的模式, 但是是从头开始来搭建以期更为一致的构架. 这些系统提供了配置和更新 job 的机制, 能够预测资源需求, 动态地对在运行中的程序推送配置文件、服务发现、负载均衡、自动扩容、机器生命周期管理、额度管理等. 许多 Omega 的创新（包括多个调度器）都被收录进了 Borg.</span><br><span class="line">所以, Omega基本上没有听过的原因找到了！</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3、Kubernetes"><a href="#2-3、Kubernetes" class="headerlink" title="2.3、Kubernetes"></a>2.3、Kubernetes</h3><p>接下来就是我们熟悉的K8S了, 它是针对在 Google 外部的对 Linux 容器感兴趣的开发者以及 Google 在公有云底层商业增长的考虑而研发的. K8s于2014年正式开源, 2015年被作为初创项目贡献给了云原生计算基金会(CNCF), 可以说从这里开启了Kubernetes时代.</p>
+<p>Kubernetes 借鉴了Borg的设计理念, 比如Pod、Service、Labels 和单IP等. Kubernetes整体架构跟 Borg 非常像, 如下图所示<br><img src="/images/Cloud/2.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">Kubernetes 主要由以下几个核心组件组成</span><br><span class="line">etcd 保存了整个集群的状态;</span><br><span class="line">kube-apiserver 提供了资源操作的唯一入口, 并提供认证、授权、访问控制、API注册和发现机制等;</span><br><span class="line">kube-controller-manager 负责维护集群的状态, 比如故障检测、自动扩展、滚动更新等;</span><br><span class="line">kube-scheduler 负责资源的调度, 按照预定的调度策略将Pod调度到相应的机器上;</span><br><span class="line">kubelet 负责维持容器的生命周期, 同时也负责 Volume(CVI) 和网络 (CNI) 的管理;</span><br><span class="line">Container runtime 负责镜像管理以及 Pod 和容器的真正运行(CRI), 默认的容器运行时为Docker;</span><br><span class="line">Kube-proxy 负责为Service 提供 cluster 内部的服务发现和负载均衡;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/Cloud/3.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">除了核心组件, 还有一些推荐的 Add-ons:</span><br><span class="line">kube-dns 负责为整个集群提供DNS服务;</span><br><span class="line">Ingress Controller 为服务提供外网入口;</span><br><span class="line">Heapster 提供资源监控;</span><br><span class="line">Dashboardd 提供GUI;</span><br><span class="line">Federation 提供跨可用区的集群;</span><br><span class="line">Fluentd-elasticsearch 提供集群日志采集、存储与查询;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="2-3-1、分层架构"><a href="#2-3-1、分层架构" class="headerlink" title="2.3.1、分层架构"></a>2.3.1、分层架构</h4><p>kubernetes 设计理念和功能其实就是一个类似Linux的分层架构, 如下图所示<br><img src="/images/Cloud/4.jpg"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">核心层: Kubernetes 最核心的功能, 对外提供 API 构建高层的应用, 对内提供插件式应用执行环境</span><br><span class="line">应用层: 部署（无状态应用、有状态应用、批处理任务、集群应用等）和路由（服务发现、DNS 解析等）</span><br><span class="line">管理层: 系统度量（如基础设施、容器和网络的度量）, 自动化（如自动扩展、动态 Provision 等）以及策略管理（RBAC、Quota、PSP、NetworkPolicy 等）</span><br><span class="line">接口层: kubectl 命令行工具、客户端 SDK 以及集群联邦</span><br><span class="line">生态系统: 在接口层之上的庞大容器集群管理调度的生态系统, 可以划分为两个范畴</span><br><span class="line">	Kubernetes 外部: 日志、监控、配置管理、CI、CD、Workflow、FaaS、OTS 应用、ChatOps 等</span><br><span class="line">	Kubernetes 内部: CRI、CNI、CVI、镜像仓库、Cloud Provider、集群自身的配置和管理等</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="2-3-2、核心组件"><a href="#2-3-2、核心组件" class="headerlink" title="2.3.2、核心组件"></a>2.3.2、核心组件</h4><p><img src="/images/Cloud/5.png"></p>
+<h4 id="2-3-3、核心-API"><a href="#2-3-3、核心-API" class="headerlink" title="2.3.3、核心 API"></a>2.3.3、核心 API</h4><p><img src="/images/Cloud/6.png"></p>
+<h4 id="2-3-4、生态系统"><a href="#2-3-4、生态系统" class="headerlink" title="2.3.4、生态系统"></a>2.3.4、生态系统</h4><p><img src="/images/Cloud/7.png"></p>
+<h4 id="2-3-5、12因素应用"><a href="#2-3-5、12因素应用" class="headerlink" title="2.3.5、12因素应用"></a>2.3.5、12因素应用</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">![](/images/Cloud/12-factor-app.png)</span><br><span class="line">1.基准代码: 每个代码仓库（repo）都生成docker image保存到镜像仓库中, 并使用唯一的ID管理, 在Jenkins中使用编译时的ID.</span><br><span class="line">2.依赖: 显式的声明代码中的依赖, 使用软件包管理工具声明, 比如Go中的Glide.</span><br><span class="line">3.配置: 将配置与代码分离, 应用部署到Kubernetes中可以使用容器的环境变量或ConfigMap挂载到容器中.</span><br><span class="line">4.后端代码: 把后端服务当作附加资源, 实质上是计算存储分离和降低服务耦合, 分解单体应用.</span><br><span class="line">5.构建、发布、运行: 严格分离构建和运行, 每次修改代码生成新的镜像, 重新发布, 不能直接修改运行时的代码和配置.</span><br><span class="line">6.进程: 应用程序进程应该是无状态的, 这意味着再次重启后还可以计算出原先的状态.</span><br><span class="line">7.端口绑定: 在Kubernetes中每个Pod都有独立的IP, 每个运行在Pod中的应用不必关心端口是否重复, 只需在service中指定端口, 集群内的service通过配置互相发现.</span><br><span class="line">8.并发: 每个容器都是一个进程, 通过增加容器的副本数实现并发.</span><br><span class="line">9.易处理: 快速启动和优雅终止可最大化健壮性, Kuberentes优秀的Pod生存周期控制.</span><br><span class="line">10.开发环境与线上环境等价: 在Kubernetes中可以创建多个namespace, 使用相同的镜像可以很方便的复制一套环境出来,镜像的使用可以很方便的部署一个后端服务.</span><br><span class="line">11.日志: 把日志当作事件流, 使用stdout输出并收集汇聚起来, 例如到ES中统一查看.</span><br><span class="line">12.管理进程: 后台管理任务当作一次性进程运行, kubectl exec进入容器内部操作.</span><br><span class="line">另外, Cloud Native Go的作者在此基础上又增加了三个</span><br><span class="line">13.API优先: 服务见的合约、团队协作的规范、文档化，规范化、RESTful或RPC</span><br><span class="line">14.监控: 实时监控远程应用、应用性能监控、应用健康监控、系统日志、不建议在线Debug</span><br><span class="line">15.认证授权: 不要等最后才去考虑应用的安全性、详细设计、明确声明、文档化、Bearer token、OAuth、OIDC认证、操作审计</span><br></pre></td></tr></table></figure>
+
+<h2 id="3、云原生应用概览"><a href="#3、云原生应用概览" class="headerlink" title="3、云原生应用概览"></a>3、云原生应用概览</h2><h3 id="3-1、云计算介绍"><a href="#3-1、云计算介绍" class="headerlink" title="3.1、云计算介绍"></a>3.1、云计算介绍</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">云计算就是一种配置资源的方式, 根据资源配置方式的不同我们可以把云计算从宏观上分为以下三种类型</span><br><span class="line">laaS: 这是为了想要建立自己的商业模式并进行自定义的客户, 例如亚马逊的EC2、S3存储、Rackspace虚拟机等都是IaaS.</span><br><span class="line">PaaS: 工具和服务的集合, 对于想用它来构建自己的应用程序或者想快速得将应用程序部署到生产环境而不必关心底层硬件的用户和开发者来说是特别有用的, 比如Cloud Foundry、Google App Engine、Heroku等.</span><br><span class="line">SaaS: 终端用户可以直接使用的应用程序. 这个就太多, 我们生活中用到的很多软件都是SaaS服务, 只要基于互联网来提供的服务基本都是SaaS服务, 有的服务是免费的, 比如Google Docs, 还有更多的是根据我们购买的Plan和使用量付费, 比如GitHub、各种云存储.</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2、微服务介绍"><a href="#3-2、微服务介绍" class="headerlink" title="3.2、微服务介绍"></a>3.2、微服务介绍</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">微服务是一种分布式架构设计理念, 为了推动细粒度服务的使用, 这些服务要能协同工作, 每个服务都有自己的生命周期. 一个微服务就是一个独立的实体, 可以独立的部署在PAAS平台上, 也可以作为一个独立的进程在主机中运行. 服务之间通过API访问, 修改一个服务不会影响其它服务.</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3、云原生概念介绍"><a href="#3-3、云原生概念介绍" class="headerlink" title="3.3、云原生概念介绍"></a>3.3、云原生概念介绍</h3><p>Cloud Native概念思维导图<br><img src="/images/Cloud/8.jpg"></p>
+<h3 id="3-4、容器生态"><a href="#3-4、容器生态" class="headerlink" title="3.4、容器生态"></a>3.4、容器生态</h3><p><img src="/images/Cloud/container-ecosystem.png"></p>
+<h3 id="3-5、持续集成与发布"><a href="#3-5、持续集成与发布" class="headerlink" title="3.5、持续集成与发布"></a>3.5、持续集成与发布</h3><p><img src="/images/Cloud/kubernetes-jenkins-ci-cd.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">应用构建和发布流程说明：</span><br><span class="line"></span><br><span class="line">用户向Gitlab提交代码，代码中必须包含Dockerfile</span><br><span class="line">将代码提交到远程仓库</span><br><span class="line">用户在发布应用时需要填写git仓库地址和分支、服务类型、服务名称、资源数量、实例个数，确定后触发Jenkins自动构建</span><br><span class="line">Jenkins的CI流水线自动编译代码并打包成Docker镜像推送到Harbor镜像仓库</span><br><span class="line">Jenkins的CI流水线中包括了自定义脚本，根据我们已准备好的Kubernetes的YAML模板，将其中的变量替换成用户输入的选项</span><br><span class="line">生成应用的Kubernetes YAML配置文件</span><br><span class="line">更新Ingress的配置，根据新部署的应用的名称，在Ingress的配置文件中增加一条路由信息</span><br><span class="line">更新PowerDNS，向其中插入一条DNS记录，IP地址是边缘节点的IP地址。关于边缘节点，请查看边缘节点配置</span><br><span class="line">Jenkins调用Kubernetes的API，部署应用</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-6、日志收集与监控"><a href="#3-6、日志收集与监控" class="headerlink" title="3.6、日志收集与监控"></a>3.6、日志收集与监控</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">基于现有的ELK日志收集方案，稍作改造，选用filebeat来收集日志，可以作为sidecar的形式跟应用运行在同一个Pod中，比较轻量级消耗资源比较少</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/Cloud/filebeat-log-collector-arch.png"></p>
+<h2 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h2><p>实践出真理，所以我准备将3.5和3.6的持续集成与发布和日志收集与监控做一期实战。云原生必将是未来！</p>
+<p>相关链接：</p>
+<p><a target="_blank" rel="noopener" href="https://cloudnative.to/blog/cloud-native-culture-not-container/">https://cloudnative.to/blog/cloud-native-culture-not-container/</a></p>
+<p><a target="_blank" rel="noopener" href="https://cloud.51cto.com/art/202103/652294.htm">https://cloud.51cto.com/art/202103/652294.htm</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/kubernetes/community/blob/master/contributors/design-proposals/architecture/architecture.md">https://github.com/kubernetes/community/blob/master/contributors/design-proposals/architecture/architecture.md</a></p>
+<p><a target="_blank" rel="noopener" href="http://queue.acm.org/detail.cfm?id=2898444">http://queue.acm.org/detail.cfm?id=2898444</a></p>
+<p><a target="_blank" rel="noopener" href="http://static.googleusercontent.com/media/research.google.com/zh-CN/pubs/archive/43438.pdf">http://static.googleusercontent.com/media/research.google.com/zh-CN/pubs/archive/43438.pdf</a></p>
+<p><a target="_blank" rel="noopener" href="http://thenewstack.io/kubernetes-an-overview">http://thenewstack.io/kubernetes-an-overview</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/kubernetes/community/tree/master/sig-architecture">https://github.com/kubernetes/community/tree/master/sig-architecture</a></p>
+<p><a target="_blank" rel="noopener" href="https://kubernetes.feisky.xyz/concepts/architecture#borg-jian-jie">https://kubernetes.feisky.xyz/concepts/architecture#borg-jian-jie</a></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Lone</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2021/10/12/%E4%BA%91%E5%8E%9F%E7%94%9F%E6%A6%82%E8%A7%88/">http://example.com/2021/10/12/%E4%BA%91%E5%8E%9F%E7%94%9F%E6%A6%82%E8%A7%88/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2021/10/10/Docker%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/">Docker核心技术.</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Lone | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
