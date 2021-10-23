@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Lone">
+
+
+
+    <meta name="description" content="This is a blog which is order to record my learning and growth">
+
+
+
+<title>go map底层原理 | Loney1</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Loney1&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Loney1&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">go map底层原理</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Lone</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">October 9, 2021&nbsp;&nbsp;14:59:24</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="1、首先，将hash冲突捣鼓捣鼓"><a href="#1、首先，将hash冲突捣鼓捣鼓" class="headerlink" title="1、首先，将hash冲突捣鼓捣鼓"></a>1、首先，将hash冲突捣鼓捣鼓</h2><h3 id="1-1-什么是hash冲突呢？"><a href="#1-1-什么是hash冲突呢？" class="headerlink" title="1.1 什么是hash冲突呢？"></a>1.1 什么是hash冲突呢？</h3><p>假设hash表的大小为9（即有9个槽），现在要把一串数据存到表里：5,28,19,15,20,33,12,17,10</p>
+<p>简单计算一下：hash(5)=5, 所以数据5应该放在hash表的第5个槽里；hash(28)=1，所以数据28应该放在hash表的第1个槽里；hash(19)=1，也就是说，数据19也应该放在hash表的第1个槽里——于是就造成了碰撞（也称为冲突，collision）</p>
+<h3 id="1-2-常见的Hash冲突的解决办法"><a href="#1-2-常见的Hash冲突的解决办法" class="headerlink" title="1.2 常见的Hash冲突的解决办法"></a>1.2 常见的Hash冲突的解决办法</h3><h4 id="1-2-1-开放定址法"><a href="#1-2-1-开放定址法" class="headerlink" title="1.2.1 开放定址法"></a>1.2.1 开放定址法</h4><p>这种方法也称再散列法，其基本思想是：当关键字key的哈希地址p=H（key）出现冲突时，以p为基础，产生另一个哈希地址p1，如果p1仍然冲突，再以p为基础，产生另一个哈希地址p2，…，直到找出一个不冲突的哈希地址pi ，将相应元素存入其中。这种方法有一个通用的再散列函数形式：</p>
+<p>Hi=（H（key）+di）% m i=1，2，…，n</p>
+<p>其中H（key）为哈希函数，m 为表长，di称为增量序列。增量序列的取值方式不同，相应的再散列方式也不同。</p>
+<p>主要有以下三种：</p>
+<p><strong>线性探测再散列</strong></p>
+<p>dii=1，2，3，…，m-1</p>
+<p>这种方法的特点是：冲突发生时，顺序查看表中下一单元，直到找出一个空单元或查遍全表</p>
+<p><strong>二次探测再散列</strong></p>
+<p>di=12，-12，22，-22，…，k2，-k2 ( k&lt;=m/2 )</p>
+<p>这种方法的特点是：冲突发生时，在表的左右进行跳跃式探测，比较灵活</p>
+<p><strong>伪随机探测再散列</strong></p>
+<p>di=伪随机数序列。</p>
+<p>具体实现时，应建立一个伪随机数发生器，（如i=(i+p) % m），并给定一个随机数做起点。</p>
+<p>例如，已知哈希表长度m=11，哈希函数为：H（key）= key % 11，则H（47）=3，H（26）=4，H（60）=5，假设下一个关键字为69，则H（69）=3，与47冲突。</p>
+<p>如果用线性探测再散列处理冲突，下一个哈希地址为H1=（3 + 1）% 11 = 4，仍然冲突，再找下一个哈希地址为H2=（3 + 2）% 11 = 5，还是冲突，继续找下一个哈希地址为H3=（3 + 3）% 11 = 6，此时不再冲突，将69填入5号单元。</p>
+<p>如果用二次探测再散列处理冲突，下一个哈希地址为H1=（3 + 12）% 11 = 4，仍然冲突，再找下一个哈希地址为H2=（3 - 12）% 11 = 2，此时不再冲突，将69填入2号单元。</p>
+<p>如果用伪随机探测再散列处理冲突，且伪随机数序列为：2，5，9，……..，则下一个哈希地址为H1=（3 + 2）% 11 = 5，仍然冲突，再找下一个哈希地址为H2=（3 + 5）% 11 = 8，此时不再冲突，将69填入8号单元。</p>
+<h4 id="1-2-2-再哈希法"><a href="#1-2-2-再哈希法" class="headerlink" title="1.2.2 再哈希法"></a>1.2.2 再哈希法</h4><p>这种方法是同时构造多个不同的哈希函数：</p>
+<p>Hi=RH1（key） i=1，2，…，k</p>
+<p>当哈希地址Hi=RH1（key）发生冲突时，再计算Hi=RH2（key）……，直到冲突不再产生。这种方法不易产生聚集，但增加了计算时间</p>
+<h4 id="1-2-3-链地址法"><a href="#1-2-3-链地址法" class="headerlink" title="1.2.3 链地址法"></a>1.2.3 链地址法</h4><p>这种方法的基本思想是将所有哈希地址为i的元素构成一个称为同义词链的单链表，并将单链表的头指针存在哈希表的第i个单元中，因而查找、插入和删除主要在同义词链中进行。链地址法适用于经常进行插入和删除的情况。</p>
+<h4 id="1-2-4-建立公共溢出区"><a href="#1-2-4-建立公共溢出区" class="headerlink" title="1.2.4 建立公共溢出区"></a>1.2.4 建立公共溢出区</h4><p>这种方法的基本思想是：将哈希表分为基本表和溢出表两部分，凡是和基本表发生冲突的元素，一律填入溢出表。</p>
+<h3 id="1-3-拉链法与开放地址法相比的优缺点"><a href="#1-3-拉链法与开放地址法相比的优缺点" class="headerlink" title="1.3 拉链法与开放地址法相比的优缺点"></a>1.3 拉链法与开放地址法相比的优缺点</h3><h4 id="1-3-1-拉链法的优点"><a href="#1-3-1-拉链法的优点" class="headerlink" title="1.3.1 拉链法的优点"></a>1.3.1 拉链法的优点</h4><p>①拉链法处理冲突简单，且无堆积现象，即非同义词决不会发生冲突，因此平均查找长度较短；</p>
+<p>②由于拉链法中各链表上的结点空间是动态申请的，故它更适合于造表前无法确定表长的情况；</p>
+<p>③开放定址法为减少冲突，要求装填因子α较小，故当结点规模较大时会浪费很多空间。而拉链法中可取α≥1，且结点较大时，拉链法中增加的指针域可忽略不计，因此节省空间；</p>
+<p>④在用拉链法构造的散列表中，删除结点的操作易于实现。只要简单地删去链表上相应的结点即可。而对开放地址法构造的散列表，删除结点不能简单地将被删结 点的空间置为空，否则将截断在它之后填人散列表的同义词结点的查找路径。这是因为各种开放地址法中，空地址单元(即开放地址)都是查找失败的条件。因此在 用开放地址法处理冲突的散列表上执行删除操作，只能在被删结点上做删除标记，而不能真正删除结点。</p>
+<h4 id="1-3-2-拉链法的缺点"><a href="#1-3-2-拉链法的缺点" class="headerlink" title="1.3.2 拉链法的缺点"></a>1.3.2 拉链法的缺点</h4><p>拉链法的缺点是：指针需要额外的空间，故当结点规模较小时，开放定址法较为节省空间，而若将节省的指针空间用来扩大散列表的规模，可使装填因子变小，这又减少了开放定址法中的冲突，从而提高平均查找速度</p>
+<h2 id="2-Go语言中Map底层思路"><a href="#2-Go语言中Map底层思路" class="headerlink" title="2  Go语言中Map底层思路"></a>2  Go语言中Map底层思路</h2><p>Go语言解决hash冲突的不是链表，实际主要是用的数组噢(内存上的连续空间)，如下图所示噢</p>
+<p><img src="/images/go/map/1.png"></p>
+<p>而且，并不是只使用了一个数组(连续内存空间)存放键和值，而是使用了两个数组分别存放键和值噢</p>
+<p>将大致的思路理一下，其实就是下图的一个关系</p>
+<p><img src="/images/go/map/2.png"></p>
+<p>我们将分析一次完整的读操作，看看具体过程</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">第一步：</span><br><span class="line">	通过hash函数获取目标key的哈希，哈希和数组的长度通过位操作获取数组位置的索引(备注：获取索引值的方式一般有取模或位操作，位操作的性能好些)</span><br><span class="line"></span><br><span class="line">第二步：</span><br><span class="line">	遍历bmap里的键，和目标key对比获取key的索引(找不到则返回空值)</span><br><span class="line">	</span><br><span class="line">第三步：</span><br><span class="line">	根据key的索引通过计算偏移量，获取到对应value</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-1-go-map中的hmap、bmap分析"><a href="#2-1-go-map中的hmap、bmap分析" class="headerlink" title="2.1  go map中的hmap、bmap分析"></a>2.1  go map中的hmap、bmap分析</h3><p>查看对应源码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">// A header for a Go map.</span><br><span class="line">type hmap struct &#123;</span><br><span class="line">    count     int                  // 键值对个数</span><br><span class="line">    flags     uint8</span><br><span class="line">    B         uint8                // 扩容常量相关字段B是buckets数组的长度的对数 2^B</span><br><span class="line">    noverflow uint16               // 溢出的bucket个数</span><br><span class="line">    hash0     uint32               // hash seed</span><br><span class="line">    buckets    unsafe.Pointer      // buckets 数组指针</span><br><span class="line">    oldbuckets unsafe.Pointer      // 结构扩容的时候用于赋值的buckets数组</span><br><span class="line">    nevacuate  uintptr             // 搬迁进度</span><br><span class="line">    extra *mapextra                // 用于扩容的指针</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">type mapextra struct &#123;</span><br><span class="line">    overflow    *[]*bmap</span><br><span class="line">    oldoverflow *[]*bmap</span><br><span class="line">    nextOverflow *bmap</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// A bucket for a Go map.</span><br><span class="line">type bmap struct &#123;</span><br><span class="line">    tophash [bucketCnt]uint8        // len为8的数组</span><br><span class="line">&#125;</span><br><span class="line">//底层定义的常量 </span><br><span class="line">const (</span><br><span class="line">    // Maximum number of key/value pairs a bucket can hold.</span><br><span class="line">    bucketCntBits = 3</span><br><span class="line">    bucketCnt     = 1 &lt;&lt; bucketCntBits</span><br><span class="line">）</span><br></pre></td></tr></table></figure>
+
+<p>当然，这只是表面的结构，编译期间 bmap 会对应更改，动态的生成一个新的数据结构</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">type bmap struct &#123;</span><br><span class="line">  topbits  [8]uint8 //key获取的hash的高8位，遍历时对比使用，提高性能</span><br><span class="line">  keys     [8]keytype //具体的key值</span><br><span class="line">  values   [8]valuetype //具体的values值</span><br><span class="line">  pad      uintptr // 指向的hmap.extra.overflow溢出桶里的bmap，上面的字段topbits、keys、elems长度为8，最多存8组键值对，存满了就往指向的这个bmap里存</span><br><span class="line">  overflow uintptr // 对齐内存使用的，不是每个bmap都有会这个字段，需要满足一定条件</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-字段-buckets"><a href="#2-2-字段-buckets" class="headerlink" title="2.2 字段 buckets"></a>2.2 字段 buckets</h3><p><img src="/images/go/map/3.png"></p>
+<p>向了一个数组(连续的内存空间)，数组的元素是<code>bmap</code>类型，这个字段我们称之为正常桶</p>
+<p> 正常桶<code>hmap.buckets</code>的元素是一个<code>bmap</code>结构。<code>bmap</code>的具体字段如下图所示：</p>
+<p><img src="/images/go/map/4.png"></p>
+<h4 id="2-2-1-结合-hmap-和-bmap-分析"><a href="#2-2-1-结合-hmap-和-bmap-分析" class="headerlink" title="2.2.1 结合 hmap 和 bmap 分析"></a>2.2.1 结合 hmap 和 bmap 分析</h4><p><img src="/images/go/map/5.png"></p>
+<h3 id="2-3-溢出桶"><a href="#2-3-溢出桶" class="headerlink" title="2.3 溢出桶"></a>2.3 溢出桶</h3><p>上面讲<code>bmap</code>的时候，我们不是得到了个结论么“每个<code>bmap</code>结构最多存放8组键值对。”，所以问题来了：</p>
+<blockquote>
+<p>正常桶里的<code>bmap</code>存满了怎么办?</p>
+</blockquote>
+<p>解决这个问题我们就要说到<code>hmap.extra</code>结构了，<code>hmap.extra</code>是个结构体，结构图示和字段释义如下：</p>
+<p><img src="/images/go/map/6.png"></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">type mapextra struct &#123;</span><br><span class="line">    overflow    *[]*bmap // 称之为溢出桶。和hmap.buckets的类型一样也是数组[]bmap，当正常桶bmap存满了的时候就使用hmap.extra.overflow的bmap</span><br><span class="line">    oldoverflow *[]*bmap // 扩容时存放之前的overflow(Map扩容相关字段)</span><br><span class="line">    nextOverflow *bmap // 指向溢出桶里下一个可以使用的bmap</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>问题</strong>：正常桶<code>hmap.buckets</code>里的<code>bmap</code>是怎么关联上溢出桶<code>hmap.extra.overflow</code>的<code>bmap</code>呢？</p>
+<p><strong>解</strong>：就是我们介绍<code>bmap</code>结构时里的<code>bmap.overflow</code>字段(如下图所示)。<code>bmap.overflow</code>是个指针类型，存放了对应使用的溢出桶<code>hmap.extra.overflow</code>里的<code>bmap</code>的地址</p>
+<p>最后，我们通过上诉所描述，通过一次读操作为例，看看读取某个key的值的一个大致过程</p>
+<p><img src="/images/go/map/7.png"></p>
+<p>最后： 上面为查阅相应资料和阅读部分大佬的成果所完成，支持原创，对应文章地址如下</p>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000039101378">https://segmentfault.com/a/1190000039101378</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/29520044">https://zhuanlan.zhihu.com/p/29520044</a></p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Lone</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2021/10/09/go%20map%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/">http://example.com/2021/10/09/go%20map%E5%BA%95%E5%B1%82%E5%88%86%E6%9E%90/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2021/10/10/Docker%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF/">Docker核心技术.</a>
+            
+            
+            <a class="next" rel="next" href="/2021/10/09/Jenkins%E5%AE%9E%E6%88%98/">Jenkins实战</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Lone | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
