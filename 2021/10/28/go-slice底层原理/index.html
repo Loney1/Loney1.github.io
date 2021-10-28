@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Lone">
+
+
+
+    <meta name="description" content="This is a blog which is order to record my learning and growth">
+
+
+
+<title>go slice底层原理 | Loney1</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Loney1&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Loney1&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">go slice底层原理</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Lone</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">October 28, 2021&nbsp;&nbsp;18:41:32</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="1-数据结构"><a href="#1-数据结构" class="headerlink" title="1 数据结构"></a>1 数据结构</h2><p>slice 源码 $GOROOT/src/runtime/slice.go</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> slice <span class="keyword">struct</span> &#123;</span><br><span class="line">	array unsafe.Pointer</span><br><span class="line">	<span class="built_in">len</span>   <span class="keyword">int</span></span><br><span class="line">	<span class="built_in">cap</span>   <span class="keyword">int</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">makeslice</span><span class="params">(et *_type, <span class="built_in">len</span>, <span class="built_in">cap</span> <span class="keyword">int</span>)</span> <span class="title">unsafe</span>.<span class="title">Pointer</span></span> &#123;</span><br><span class="line">	mem, overflow := math.MulUintptr(et.size, <span class="keyword">uintptr</span>(<span class="built_in">cap</span>))</span><br><span class="line">	<span class="keyword">if</span> overflow || mem &gt; maxAlloc || <span class="built_in">len</span> &lt; <span class="number">0</span> || <span class="built_in">len</span> &gt; <span class="built_in">cap</span> &#123;</span><br><span class="line">		<span class="comment">// <span class="doctag">NOTE:</span> Produce a &#x27;len out of range&#x27; error instead of a</span></span><br><span class="line">		<span class="comment">// &#x27;cap out of range&#x27; error when someone does make([]T, bignumber).</span></span><br><span class="line">		<span class="comment">// &#x27;cap out of range&#x27; is true too, but since the cap is only being</span></span><br><span class="line">		<span class="comment">// supplied implicitly, saying len is clearer.</span></span><br><span class="line">		<span class="comment">// See golang.org/issue/4085.</span></span><br><span class="line">		mem, overflow := math.MulUintptr(et.size, <span class="keyword">uintptr</span>(<span class="built_in">len</span>))</span><br><span class="line">		<span class="keyword">if</span> overflow || mem &gt; maxAlloc || <span class="built_in">len</span> &lt; <span class="number">0</span> &#123;</span><br><span class="line">			panicmakeslicelen()</span><br><span class="line">		&#125;</span><br><span class="line">		panicmakeslicecap()</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//以上是对内存溢出情况对panic处理</span></span><br><span class="line">	<span class="keyword">return</span> mallocgc(mem, et, <span class="literal">true</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="2-slice创建"><a href="#2-slice创建" class="headerlink" title="2 slice创建"></a>2 slice创建</h2><h3 id="2-1-通过make创建"><a href="#2-1-通过make创建" class="headerlink" title="2.1 通过make创建"></a>2.1 通过make创建</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//make</span></span><br><span class="line">slice := <span class="built_in">make</span>([]<span class="keyword">int</span>, <span class="number">5</span>, <span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-通过数组创建"><a href="#2-2-通过数组创建" class="headerlink" title="2.2 通过数组创建"></a>2.2 通过数组创建</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//array</span></span><br><span class="line">array := [<span class="number">10</span>]<span class="keyword">int</span>&#123;&#125;</span><br><span class="line">slice := array[<span class="number">0</span>:<span class="number">5</span>]</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/go/slice/1.png"></p>
+<h3 id="2-3-内存共享"><a href="#2-3-内存共享" class="headerlink" title="2.3 内存共享"></a>2.3 内存共享</h3><p>当<strong>slice</strong>通过<strong>数组</strong>切分时，两者会共用内存空间，此时<code>slice[0] == array[5] : true slice[1] == array[6] : true</code>，这个特性需要特别注意，尤其是在同时处理<strong>数组</strong>和<strong>slice</strong>的过程中，如我们操作<code>array[5] = 8</code>，那么<code>slice[0]</code>此时也是<code>8</code></p>
+<p><img src="/images/go/slice/2.png"></p>
+<h2 id="3-slice-扩容"><a href="#3-slice-扩容" class="headerlink" title="3 slice 扩容"></a>3 slice 扩容</h2><p>slice扩容的方法定义在<code>$GOROOT/src/runtime/slice.go</code>的<code>growslice</code>方法中。</p>
+<h3 id="3-1-通过扩容策略"><a href="#3-1-通过扩容策略" class="headerlink" title="3.1 通过扩容策略"></a>3.1 通过扩容策略</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">newcap := old.<span class="built_in">cap</span></span><br><span class="line">doublecap := newcap + newcap</span><br><span class="line"><span class="keyword">if</span> <span class="built_in">cap</span> &gt; doublecap &#123;</span><br><span class="line">	newcap = <span class="built_in">cap</span></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">	<span class="keyword">if</span> old.<span class="built_in">cap</span> &lt; <span class="number">1024</span> &#123;</span><br><span class="line">		newcap = doublecap</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		<span class="comment">// Check 0 &lt; newcap to detect overflow</span></span><br><span class="line">		<span class="comment">// and prevent an infinite loop.</span></span><br><span class="line">		<span class="keyword">for</span> <span class="number">0</span> &lt; newcap &amp;&amp; newcap &lt; <span class="built_in">cap</span> &#123;</span><br><span class="line">			newcap += newcap / <span class="number">4</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// Set newcap to the requested cap when</span></span><br><span class="line">		<span class="comment">// the newcap calculation overflowed.</span></span><br><span class="line">		<span class="keyword">if</span> newcap &lt;= <span class="number">0</span> &#123;</span><br><span class="line">			newcap = <span class="built_in">cap</span></span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>如果新cap大小是当前cap的<strong>2倍</strong>以上，那么按照新cap进行扩容</li>
+<li>cap小于1024，按照<strong>2倍</strong>扩容</li>
+<li>cap大于1024，按照<strong>1.25倍</strong>扩容</li>
+</ul>
+<h2 id="4-常见问题"><a href="#4-常见问题" class="headerlink" title="4 常见问题"></a>4 常见问题</h2><h3 id="4-1-nil-slice和空slice"><a href="#4-1-nil-slice和空slice" class="headerlink" title="4.1 nil slice和空slice"></a>4.1 nil slice和空slice</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 声明一个nil slice</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> nil_slice []<span class="keyword">int</span></span><br></pre></td></tr></table></figure>
+
+<p>nil slice 表示它的指针为nil，也就是这个 slice 不会指向哪个底层数组。因此， nil slice 的长度和容量都为 0</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">|--------|---------|----------|</span><br><span class="line">|  nil   |   0     |     0    |</span><br><span class="line">|  ptr   | Length  | Capacity |</span><br><span class="line">|--------|---------|----------|</span><br></pre></td></tr></table></figure>
+
+<p>还可以创建空slice(Empty Slice)，空slice表示长度为0，容量为0，但却有指向的slice，只不过指向的底层数组暂时是长度为0的空数组。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用make创建</span></span><br><span class="line">empty_slice := <span class="built_in">make</span>([]<span class="keyword">int</span>,<span class="number">0</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 直接创建</span></span><br><span class="line">empty_slice := []<span class="keyword">int</span>&#123;&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Empty Slice的结构如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">|--------|---------|----------|</span><br><span class="line">|  ADDR  |   0     |     0    |</span><br><span class="line">|  ptr   | Length  | Capacity |</span><br><span class="line">|--------|---------|----------|</span><br></pre></td></tr></table></figure>
+
+<p>虽然nil slice和Empty slice的长度和容量都为0，输出时的结果都是<code>[]</code>，且都不存储任何数据，但它们是不同的。nil slice不会指向底层数组，而空slice会指向底层数组，只不过这个底层数组暂时是空数组</p>
+<h3 id="4-2-slice-和内存浪费问题"><a href="#4-2-slice-和内存浪费问题" class="headerlink" title="4.2 slice 和内存浪费问题"></a>4.2 slice 和内存浪费问题</h3><p>由于slice的底层是数组，很可能数组很大，但slice所取的元素数量却很小，这就导致数组占用的绝大多数空间是被浪费的。</p>
+<p>特别地，垃圾回收器(GC)不会回收正在被引用的对象，当一个函数直接返回指向底层数组的slice时，这个底层数组将不会随函数退出而被回收，而是因为slice的引用而永远保留，除非返回的slice也消失。</p>
+<p>因此，当函数的返回值是一个指向底层数组的数据结构时(如slice)，应当在函数内部将slice拷贝一份保存到一个使用自己底层数组的新slice中，并返回这个新的slice。这样函数一退出，原来那个体积较大的底层数组就会被回收，保留在内存中的是小的slice。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Lone</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2021/10/28/go-slice%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/">http://example.com/2021/10/28/go-slice%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2021/10/23/go-map%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/">go map底层原理</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Lone | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
