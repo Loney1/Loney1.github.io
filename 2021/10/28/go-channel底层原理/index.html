@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Lone">
+
+
+
+    <meta name="description" content="This is a blog which is order to record my learning and growth">
+
+
+
+<title>go channel底层原理 | Loney1</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Loney1&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Loney1&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">go channel底层原理</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Lone</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">October 28, 2021&nbsp;&nbsp;20:32:24</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="1-CSP"><a href="#1-CSP" class="headerlink" title="1 CSP"></a>1 CSP</h2><p>​    讲 channel 之前，我觉得还是要先说一下 CSP ，CSP 的全称 Communicating Sequential Processes，意思就是通信顺序进程。这个概念源于 1978 年ACM 期刊中的 Charles Antony Richard Hoare 写的经典同名论文。CSP 是一种并发编程模型，用于描述两个独立的并发实体通过共享的通讯 channel 进行通信的并发模型</p>
+<p>严格来说，CSP 是一门形式语言，用于描述并发系统中的互动模式，也因此成为一众面向并发的编程语言的理论源头，并衍生出了 Golang 等语言，golang 其实也只用到了 CSP 的很小一部分，即理论中的  <strong>Process/Channel（对应到语言中的 goroutine/channel）</strong></p>
+<p>这两个并发原语之间没有从属关系， Process 可以订阅任意个 Channel，Channel 也并不关心是哪个 Process 在利用它进行通信；Process 围绕 Channel 进行读写，形成一套有序阻塞和可预测的并发模型。</p>
+<h3 id="1-1-golang-SCP"><a href="#1-1-golang-SCP" class="headerlink" title="1.1 golang SCP"></a>1.1 golang SCP</h3><p>​    与主流语言通过共享内存来进行并发控制方式不同，Go 语言采用了 CSP 模式。这是一种用于描述两个独立的并发实体通过共享的通讯 Channel（管道）进行通信的并发模型。</p>
+<p>Golang 就是借用CSP模型的一些概念为之实现并发进行理论支持，其实从实际上出发，go语言并没有，完全实现了CSP模型的所有理论，仅仅是借用了 process和channel这两个概念。process是在go语言上的表现就是 goroutine 是实际并发执行的实体，每个实体之间是通过channel通讯来实现数据共享。</p>
+<p>Go语言的CSP模型是由协程Goroutine与通道Channel实现：</p>
+<ul>
+<li>Go协程goroutine: 是一种轻量线程，它不是操作系统的线程，而是将一个操作系统线程分段使用，通过调度器实现协作式调度。是一种绿色线程，微线程，它与Coroutine协程也有区别，能够在发现堵塞后启动新的微线程。</li>
+<li>通道channel: 类似Unix的Pipe，用于协程之间通讯和同步。协程之间虽然解耦，但是它们和Channel有着耦合</li>
+</ul>
+<h2 id="2-Channel"><a href="#2-Channel" class="headerlink" title="2 Channel"></a>2 Channel</h2><h3 id="2-1-channle-源码分析"><a href="#2-1-channle-源码分析" class="headerlink" title="2.1 channle 源码分析"></a>2.1 channle 源码分析</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> hchan <span class="keyword">struct</span> &#123;</span><br><span class="line">	qcount   <span class="keyword">uint</span> 			<span class="comment">// 队列中元素个数</span></span><br><span class="line">	dataqsiz <span class="keyword">uint</span> 			<span class="comment">// 循环队列的大小</span></span><br><span class="line">	buf      unsafe.Pointer  <span class="comment">// 指向循环队列</span></span><br><span class="line">	elemsize <span class="keyword">uint16</span> 		<span class="comment">// 通道里面的元素大小</span></span><br><span class="line">	closed   <span class="keyword">uint32</span> 		<span class="comment">// 通道关闭的标志</span></span><br><span class="line">	elemtype *_type 		<span class="comment">// 通道元素的类型</span></span><br><span class="line">	sendx    <span class="keyword">uint</span>   		<span class="comment">// 待发送的索引，即循环队列中的队尾指针front</span></span><br><span class="line">	recvx    <span class="keyword">uint</span>   		<span class="comment">// 待读取的索引，即循环队列中的队头指针rear</span></span><br><span class="line">	recvq    waitq  		<span class="comment">// 接收等待队列</span></span><br><span class="line">	sendq    waitq  		<span class="comment">// 发送等待队列</span></span><br><span class="line">	lock mutex 			    <span class="comment">// 互斥锁</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/images/go/channel/1.png"></p>
+<p><strong>buf</strong>：指向一个数组，用来实现循环队列，是有缓冲的channel所特有的结构，用来存储缓存数据。是个循环链表</p>
+<p><strong>sendx, recvx</strong>：用于记录 buf 这个循环链表中的发送或者接受的 index，sendx是循环队列的队尾指针，recvx是循环队列的队头指针</p>
+<p><strong>recvq, sendq</strong>：接受和发送的 goroutine 抽象出来的结构体，对应的结构体为 sudog 的队列，是一个双向链表，两者都是waitq类型。</p>
+<p>waitq 是一个结构体类型，waitq和sudog构成双向链表，其中sudog是链表元素的类型，waitq 中first和last字段分别指向链表头部的 sudog，链表尾部的 sudog。</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> waitq <span class="keyword">struct</span> &#123;</span><br><span class="line">	first *sudog</span><br><span class="line">	last  *sudog</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">type</span> sudog <span class="keyword">struct</span> &#123;</span><br><span class="line">	...</span><br><span class="line">	g *g 	<span class="comment">// 当前阻塞的G</span></span><br><span class="line">	...</span><br><span class="line">	next     *sudog</span><br><span class="line">	prev     *sudog</span><br><span class="line">	elem     unsafe.Pointer</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-2-channel-创建"><a href="#2-2-channel-创建" class="headerlink" title="2.2 channel 创建"></a>2.2 channel 创建</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 无缓冲</span></span><br><span class="line">ch : <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>)</span><br><span class="line"><span class="comment">// 有缓冲</span></span><br><span class="line">ch : <span class="built_in">make</span>(<span class="keyword">chan</span> <span class="keyword">int</span>, <span class="number">3</span>)</span><br></pre></td></tr></table></figure>
+
+<p>创建 channel 实际上是在内存中实例化了一个 hchan 的结构体，并返回一个 ch 指针，我们使用过程中 channel 在函数之间传递都是用的这个指针，这就是为什么函数传递中无需使用 channel 的指针，而直接使用 channel 就行了， 因为 channel 本身就是一个指针。</p>
+<p>相关源码</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> (</span><br><span class="line">	maxAlign  = <span class="number">8</span></span><br><span class="line">	hchanSize = unsafe.Sizeof(hchan&#123;&#125;) + <span class="keyword">uintptr</span>(-<span class="keyword">int</span>(unsafe.Sizeof(hchan&#123;&#125;))&amp;(maxAlign<span class="number">-1</span>))</span><br><span class="line">	...</span><br><span class="line">    <span class="comment">// maxAlgin用来设置内存最大对齐值，提高读写速度</span></span><br><span class="line">    <span class="comment">// hchanSize用来设置cache大小，上面公式用于计划最接近8的倍数</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">makechan</span><span class="params">(t *chantype, size <span class="keyword">int</span>)</span> *<span class="title">hchan</span></span> &#123;</span><br><span class="line">	elem := t.elem</span><br><span class="line">	<span class="comment">// 通道元素的大小不能超过64K</span></span><br><span class="line">	<span class="keyword">if</span> elem.size &gt;= <span class="number">1</span>&lt;&lt;<span class="number">16</span> &#123;</span><br><span class="line">		throw(<span class="string">&quot;makechan: invalid channel element type&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// hchanSize大小不是maxAlign倍数，或者通道数据元素的对齐保证大于maxAlign</span></span><br><span class="line">	<span class="keyword">if</span> hchanSize%maxAlign != <span class="number">0</span> || elem.align &gt; maxAlign &#123;</span><br><span class="line">		throw(<span class="string">&quot;makechan: bad alignment&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 判断通道数据是否超过内存限制</span></span><br><span class="line">	mem, overflow := math.MulUintptr(elem.size, <span class="keyword">uintptr</span>(size))</span><br><span class="line">	<span class="keyword">if</span> overflow || mem &gt; maxAlloc-hchanSize || size &lt; <span class="number">0</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(plainError(<span class="string">&quot;makechan: size out of range&quot;</span>))</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> c *hchan</span><br><span class="line">	<span class="keyword">switch</span> &#123;</span><br><span class="line">	<span class="keyword">case</span> mem == <span class="number">0</span>: <span class="comment">// 无缓冲通道</span></span><br><span class="line">		c = (*hchan)(mallocgc(hchanSize, <span class="literal">nil</span>, <span class="literal">true</span>))</span><br><span class="line">		c.buf = c.raceaddr()</span><br><span class="line">	<span class="keyword">case</span> elem.ptrdata == <span class="number">0</span>: </span><br><span class="line">    	<span class="comment">// 当通道数据元素不含指针，hchan和buf内存空间调用mallocgc一次性分配完成</span></span><br><span class="line">		c = (*hchan)(mallocgc(hchanSize+mem, <span class="literal">nil</span>, <span class="literal">true</span>))</span><br><span class="line">        <span class="comment">// hchan和buf内存上布局是紧挨着的</span></span><br><span class="line">		c.buf = add(unsafe.Pointer(c), hchanSize)</span><br><span class="line">	<span class="keyword">default</span>:</span><br><span class="line">		<span class="comment">// 当通道数据元素含指针时候，先创建hchan，然后给buf分配内存空间</span></span><br><span class="line">		c = <span class="built_in">new</span>(hchan)</span><br><span class="line">		c.buf = mallocgc(mem, elem, <span class="literal">true</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	c.elemsize = <span class="keyword">uint16</span>(elem.size)</span><br><span class="line">	c.elemtype = elem</span><br><span class="line">	c.dataqsiz = <span class="keyword">uint</span>(size)</span><br><span class="line">	...</span><br><span class="line">	<span class="keyword">return</span> c</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-3-channel-send、recv"><a href="#2-3-channel-send、recv" class="headerlink" title="2.3 channel send、recv"></a>2.3 channel send、recv</h3><p>首先 goroutine 以 FIFO(先进先出)的方式进入的 hchan中，通过加速的机制，可以看见 hchan 中有一个 lock</p>
+<h4 id="2-3-1-send"><a href="#2-3-1-send" class="headerlink" title="2.3.1 send"></a>2.3.1 send</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">chansend</span><span class="params">(c *hchan, ep unsafe.Pointer, block <span class="keyword">bool</span>, callerpc <span class="keyword">uintptr</span>)</span> <span class="title">bool</span></span> &#123;</span><br><span class="line">	<span class="comment">// 当通道为nil时候</span></span><br><span class="line">	<span class="keyword">if</span> c == <span class="literal">nil</span> &#123;</span><br><span class="line">    	<span class="comment">// 非阻塞模式下，直接返回false</span></span><br><span class="line">		<span class="keyword">if</span> !block &#123;</span><br><span class="line">			<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">		&#125;</span><br><span class="line">        <span class="comment">// 调用gopark将当前Goroutine休眠，调用gopark时候，将传入unlockf设置为nil，当前Goroutine会一直休眠</span></span><br><span class="line">		gopark(<span class="literal">nil</span>, <span class="literal">nil</span>, waitReasonChanSendNilChan, traceEvGoStop, <span class="number">2</span>)</span><br><span class="line">		throw(<span class="string">&quot;unreachable&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 调试，不必关注</span></span><br><span class="line">	<span class="keyword">if</span> debugChan &#123;</span><br><span class="line">		<span class="built_in">print</span>(<span class="string">&quot;chansend: chan=&quot;</span>, c, <span class="string">&quot;\n&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 竞态检测，不必关注</span></span><br><span class="line">	<span class="keyword">if</span> raceenabled &#123;</span><br><span class="line">		racereadpc(c.raceaddr(), callerpc, funcPC(chansend))</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 非阻塞模式下，不使用锁快速检查send操作</span></span><br><span class="line">	<span class="keyword">if</span> !block &amp;&amp; c.closed == <span class="number">0</span> &amp;&amp; ((c.dataqsiz == <span class="number">0</span> &amp;&amp; c.recvq.first == <span class="literal">nil</span>) ||</span><br><span class="line">		(c.dataqsiz &gt; <span class="number">0</span> &amp;&amp; c.qcount == c.dataqsiz)) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">var</span> t0 <span class="keyword">int64</span></span><br><span class="line">	<span class="keyword">if</span> blockprofilerate &gt; <span class="number">0</span> &#123;</span><br><span class="line">		t0 = cputicks()</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 加锁</span></span><br><span class="line">	lock(&amp;c.lock)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 如果通道已关闭，再发送数据，发生恐慌</span></span><br><span class="line">	<span class="keyword">if</span> c.closed != <span class="number">0</span> &#123;</span><br><span class="line">		unlock(&amp;c.lock)</span><br><span class="line">		<span class="built_in">panic</span>(plainError(<span class="string">&quot;send on closed channel&quot;</span>))</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">    <span class="comment">// 从接收者队列recvq中取出一个接收者，接收者不为空情况下，直接将数据传递给该接收者</span></span><br><span class="line">	<span class="keyword">if</span> sg := c.recvq.dequeue(); sg != <span class="literal">nil</span> &#123;</span><br><span class="line">		send(c, sg, ep, <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123; unlock(&amp;c.lock) &#125;, <span class="number">3</span>)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 缓冲队列中的元素个数小于队列的大小</span></span><br><span class="line">    <span class="comment">// 说明缓冲队列还有空间</span></span><br><span class="line">	<span class="keyword">if</span> c.qcount &lt; c.dataqsiz &#123;</span><br><span class="line">		qp := chanbuf(c, c.sendx) <span class="comment">// qp指向循环数组中未使用的位置</span></span><br><span class="line">		<span class="keyword">if</span> raceenabled &#123;</span><br><span class="line">			raceacquire(qp)</span><br><span class="line">			racerelease(qp)</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="comment">// 将发送的数据写入到qp指向的循环数组中的位置</span></span><br><span class="line">		typedmemmove(c.elemtype, qp, ep)</span><br><span class="line">		c.sendx++ <span class="comment">// 将send加一，相当于循环队列的front指针向前进1</span></span><br><span class="line">		<span class="keyword">if</span> c.sendx == c.dataqsiz &#123; <span class="comment">//当循环队列最后一个元素已使用，此时循环队列将再次从0开始</span></span><br><span class="line">			c.sendx = <span class="number">0</span></span><br><span class="line">		&#125;</span><br><span class="line">		c.qcount++ <span class="comment">// 队列中元素计数加1</span></span><br><span class="line">		unlock(&amp;c.lock) <span class="comment">// 释放锁</span></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !block &#123;</span><br><span class="line">		unlock(&amp;c.lock)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	gp := getg() <span class="comment">// 获取当前的G</span></span><br><span class="line">	mysg := acquireSudog() <span class="comment">// 返回一个sudog</span></span><br><span class="line">	mysg.releasetime = <span class="number">0</span></span><br><span class="line">	<span class="keyword">if</span> t0 != <span class="number">0</span> &#123;</span><br><span class="line">		mysg.releasetime = <span class="number">-1</span></span><br><span class="line">	&#125;</span><br><span class="line">	mysg.elem = ep <span class="comment">// 发送的数据</span></span><br><span class="line">	mysg.waitlink = <span class="literal">nil</span></span><br><span class="line">	mysg.g = gp <span class="comment">// 当前G，即发送者</span></span><br><span class="line">	mysg.isSelect = <span class="literal">false</span></span><br><span class="line">	mysg.c = c</span><br><span class="line">	gp.waiting = mysg</span><br><span class="line">	gp.param = <span class="literal">nil</span></span><br><span class="line">	c.sendq.enqueue(mysg) <span class="comment">// 将当前发送者入队sendq中</span></span><br><span class="line">	goparkunlock(&amp;c.lock, waitReasonChanSend, traceEvGoBlockSend, <span class="number">3</span>) <span class="comment">// 将当前goroutine放入waiting状态，并释放c.lock锁</span></span><br><span class="line">    </span><br><span class="line">	<span class="comment">// Ensure the value being sent is kept alive until the</span></span><br><span class="line">	<span class="comment">// receiver copies it out. The sudog has a pointer to the</span></span><br><span class="line">	<span class="comment">// stack object, but sudogs aren&#x27;t considered as roots of the</span></span><br><span class="line">	<span class="comment">// stack tracer</span></span><br><span class="line">	KeepAlive(ep)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// someone woke us up.</span></span><br><span class="line">	<span class="keyword">if</span> mysg != gp.waiting &#123;</span><br><span class="line">		throw(<span class="string">&quot;G waiting list is corrupted&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	gp.waiting = <span class="literal">nil</span></span><br><span class="line">	<span class="keyword">if</span> gp.param == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> c.closed == <span class="number">0</span> &#123;</span><br><span class="line">			throw(<span class="string">&quot;chansend: spurious wakeup&quot;</span>)</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">panic</span>(plainError(<span class="string">&quot;send on closed channel&quot;</span>))</span><br><span class="line">	&#125;</span><br><span class="line">	gp.param = <span class="literal">nil</span></span><br><span class="line">	<span class="keyword">if</span> mysg.releasetime &gt; <span class="number">0</span> &#123;</span><br><span class="line">		blockevent(mysg.releasetime-t0, <span class="number">2</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	mysg.c = <span class="literal">nil</span></span><br><span class="line">	releaseSudog(mysg)</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">send</span><span class="params">(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf <span class="keyword">func</span>()</span>, <span class="title">skip</span> <span class="title">int</span>)</span> &#123;</span><br><span class="line">	<span class="keyword">if</span> raceenabled &#123;</span><br><span class="line">		<span class="keyword">if</span> c.dataqsiz == <span class="number">0</span> &#123;</span><br><span class="line">        	<span class="comment">// 无缓冲通道</span></span><br><span class="line">			racesync(c, sg)</span><br><span class="line">		&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">			qp := chanbuf(c, c.recvx)</span><br><span class="line">			raceacquire(qp)</span><br><span class="line">			racerelease(qp)</span><br><span class="line">			raceacquireg(sg.g, qp)</span><br><span class="line">			racereleaseg(sg.g, qp)</span><br><span class="line">			c.recvx++ <span class="comment">// 相当于循环队列的rear指针向前进1</span></span><br><span class="line">			<span class="keyword">if</span> c.recvx == c.dataqsiz &#123; <span class="comment">// 队列数组中最后一个元素已读取，则再次从头开始读取</span></span><br><span class="line">				c.recvx = <span class="number">0</span></span><br><span class="line">			&#125;</span><br><span class="line">			c.sendx = c.recvx</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> sg.elem != <span class="literal">nil</span> &#123; <span class="comment">// 复制数据到sg中</span></span><br><span class="line">		sendDirect(c.elemtype, sg, ep)</span><br><span class="line">		sg.elem = <span class="literal">nil</span></span><br><span class="line">	&#125;</span><br><span class="line">	gp := sg.g</span><br><span class="line">	unlockf()</span><br><span class="line">	gp.param = unsafe.Pointer(sg)</span><br><span class="line">	<span class="keyword">if</span> sg.releasetime != <span class="number">0</span> &#123;</span><br><span class="line">		sg.releasetime = cputicks()</span><br><span class="line">	&#125;</span><br><span class="line">	goready(gp, skip+<span class="number">1</span>) <span class="comment">// 使goroutine变成runnable状态，唤醒goroutine</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">sendDirect</span><span class="params">(t *_type, sg *sudog, src unsafe.Pointer)</span></span> &#123;</span><br><span class="line">	dst := sg.elem</span><br><span class="line">	typeBitsBulkBarrier(t, <span class="keyword">uintptr</span>(dst), <span class="keyword">uintptr</span>(src), t.size)</span><br><span class="line">	memmove(dst, src, t.size)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 返回缓存槽i位置的对应的指针</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">chanbuf</span><span class="params">(c *hchan, i <span class="keyword">uint</span>)</span> <span class="title">unsafe</span>.<span class="title">Pointer</span></span> &#123;</span><br><span class="line">	<span class="keyword">return</span> add(c.buf, <span class="keyword">uintptr</span>(i)*<span class="keyword">uintptr</span>(c.elemsize))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将src值复制到dst</span></span><br><span class="line"><span class="comment">// 源码https://github.com/golang/go/blob/2bc8d90fa21e9547aeb0f0ae775107dc8e05dc0a/src/runtime/mbarrier.go#L156</span></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">typedmemmove</span><span class="params">(typ *_type, dst, src unsafe.Pointer)</span></span> &#123;</span><br><span class="line">	<span class="keyword">if</span> dst == src &#123;</span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	&#125;</span><br><span class="line">    ...</span><br><span class="line">	memmove(dst, src, typ.size)</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h4 id="2-3-2-recv"><a href="#2-3-2-recv" class="headerlink" title="2.3.2 recv"></a>2.3.2 recv</h4><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">chanrecv</span><span class="params">(c *hchan, ep unsafe.Pointer, block <span class="keyword">bool</span>)</span> <span class="params">(selected, received <span class="keyword">bool</span>)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 当通道为nil时候</span></span><br><span class="line">	<span class="keyword">if</span> c == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> !block &#123; <span class="comment">// 当非阻塞模式直接返回</span></span><br><span class="line">			<span class="keyword">return</span></span><br><span class="line">		&#125;</span><br><span class="line">        <span class="comment">// 一直阻塞</span></span><br><span class="line">		gopark(<span class="literal">nil</span>, <span class="literal">nil</span>, waitReasonChanReceiveNilChan, traceEvGoStop, <span class="number">2</span>)</span><br><span class="line">		throw(<span class="string">&quot;unreachable&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	...</span><br><span class="line">	<span class="comment">// 加锁锁</span></span><br><span class="line">	lock(&amp;c.lock)</span><br><span class="line">	<span class="comment">// 当通道已关闭，且通道缓冲没有元素时候，直接返回</span></span><br><span class="line">	<span class="keyword">if</span> c.closed != <span class="number">0</span> &amp;&amp; c.qcount == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> raceenabled &#123;</span><br><span class="line">			raceacquire(c.raceaddr())</span><br><span class="line">		&#125;</span><br><span class="line">		unlock(&amp;c.lock) <span class="comment">// 释放锁</span></span><br><span class="line">		<span class="keyword">if</span> ep != <span class="literal">nil</span> &#123;</span><br><span class="line">			typedmemclr(c.elemtype, ep) <span class="comment">// 清空ep指向的内存</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span>, <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 从发送者队列中取出一个发送者，发送者不为空时候，将发送者数据传递给接收者</span></span><br><span class="line">	<span class="keyword">if</span> sg := c.sendq.dequeue(); sg != <span class="literal">nil</span> &#123;</span><br><span class="line">		recv(c, sg, ep, <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123; unlock(&amp;c.lock) &#125;, <span class="number">3</span>)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span>, <span class="literal">true</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 缓冲队列中有数据情况下，从缓存队列取出数据，传递给接收者</span></span><br><span class="line">	<span class="keyword">if</span> c.qcount &gt; <span class="number">0</span> &#123;</span><br><span class="line">        <span class="comment">// qp指向循环队列数组中元素</span></span><br><span class="line">		qp := chanbuf(c, c.recvx)</span><br><span class="line">		<span class="keyword">if</span> raceenabled &#123;</span><br><span class="line">			raceacquire(qp)</span><br><span class="line">			racerelease(qp)</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> ep != <span class="literal">nil</span> &#123;</span><br><span class="line">            <span class="comment">// 直接qp指向的数据复制到ep指向的地址</span></span><br><span class="line">			typedmemmove(c.elemtype, ep, qp)</span><br><span class="line">		&#125;</span><br><span class="line">        <span class="comment">// 清空qp指向内存的数据</span></span><br><span class="line">		typedmemclr(c.elemtype, qp)</span><br><span class="line">		c.recvx++ <span class="comment">// 相当于循环队列中的rear加1</span></span><br><span class="line">		<span class="keyword">if</span> c.recvx == c.dataqsiz &#123; <span class="comment">// 队列最后一个元素已读取出来，recvx指向0</span></span><br><span class="line">			c.recvx = <span class="number">0</span></span><br><span class="line">		&#125;</span><br><span class="line">		c.qcount-- <span class="comment">// 队列中元素个数减1</span></span><br><span class="line">		unlock(&amp;c.lock) <span class="comment">// 释放锁</span></span><br><span class="line">		<span class="keyword">return</span> <span class="literal">true</span>, <span class="literal">true</span></span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> !block &#123;</span><br><span class="line">		unlock(&amp;c.lock)</span><br><span class="line">		<span class="keyword">return</span> <span class="literal">false</span>, <span class="literal">false</span></span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">	gp := getg()</span><br><span class="line">	mysg := acquireSudog()</span><br><span class="line">	mysg.releasetime = <span class="number">0</span></span><br><span class="line">	<span class="keyword">if</span> t0 != <span class="number">0</span> &#123;</span><br><span class="line">		mysg.releasetime = <span class="number">-1</span></span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">	mysg.elem = ep</span><br><span class="line">	mysg.waitlink = <span class="literal">nil</span></span><br><span class="line">	gp.waiting = mysg</span><br><span class="line">	mysg.g = gp</span><br><span class="line">	mysg.isSelect = <span class="literal">false</span></span><br><span class="line">	mysg.c = c</span><br><span class="line">	gp.param = <span class="literal">nil</span></span><br><span class="line">	c.recvq.enqueue(mysg)</span><br><span class="line">	goparkunlock(&amp;c.lock, waitReasonChanReceive, traceEvGoBlockRecv, <span class="number">3</span>)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> mysg != gp.waiting &#123;</span><br><span class="line">		throw(<span class="string">&quot;G waiting list is corrupted&quot;</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	gp.waiting = <span class="literal">nil</span></span><br><span class="line">	<span class="keyword">if</span> mysg.releasetime &gt; <span class="number">0</span> &#123;</span><br><span class="line">		blockevent(mysg.releasetime-t0, <span class="number">2</span>)</span><br><span class="line">	&#125;</span><br><span class="line">	closed := gp.param == <span class="literal">nil</span></span><br><span class="line">	gp.param = <span class="literal">nil</span></span><br><span class="line">	mysg.c = <span class="literal">nil</span></span><br><span class="line">	releaseSudog(mysg)</span><br><span class="line">	<span class="keyword">return</span> <span class="literal">true</span>, !closed</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">recv</span><span class="params">(c *hchan, sg *sudog, ep unsafe.Pointer, unlockf <span class="keyword">func</span>()</span>, <span class="title">skip</span> <span class="title">int</span>)</span> &#123;</span><br><span class="line">	<span class="keyword">if</span> c.dataqsiz == <span class="number">0</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> raceenabled &#123;</span><br><span class="line">			racesync(c, sg)</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> ep != <span class="literal">nil</span> &#123;</span><br><span class="line">			recvDirect(c.elemtype, sg, ep)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">		qp := chanbuf(c, c.recvx)</span><br><span class="line">		<span class="keyword">if</span> raceenabled &#123;</span><br><span class="line">			raceacquire(qp)</span><br><span class="line">			racerelease(qp)</span><br><span class="line">			raceacquireg(sg.g, qp)</span><br><span class="line">			racereleaseg(sg.g, qp)</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="comment">// 复制队列中数据到接收者</span></span><br><span class="line">		<span class="keyword">if</span> ep != <span class="literal">nil</span> &#123;</span><br><span class="line">			typedmemmove(c.elemtype, ep, qp)</span><br><span class="line">		&#125;</span><br><span class="line">		typedmemmove(c.elemtype, qp, sg.elem)</span><br><span class="line">		c.recvx++</span><br><span class="line">		<span class="keyword">if</span> c.recvx == c.dataqsiz &#123;</span><br><span class="line">			c.recvx = <span class="number">0</span></span><br><span class="line">		&#125;</span><br><span class="line">		c.sendx = c.recvx</span><br><span class="line">	&#125;</span><br><span class="line">	sg.elem = <span class="literal">nil</span></span><br><span class="line">	gp := sg.g</span><br><span class="line">	unlockf()</span><br><span class="line">	gp.param = unsafe.Pointer(sg)</span><br><span class="line">	<span class="keyword">if</span> sg.releasetime != <span class="number">0</span> &#123;</span><br><span class="line">		sg.releasetime = cputicks()</span><br><span class="line">	&#125;</span><br><span class="line">	goready(gp, skip+<span class="number">1</span>) <span class="comment">// 唤醒G</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h3 id="2-4-channel-队列"><a href="#2-4-channel-队列" class="headerlink" title="2.4 channel 队列"></a>2.4 channel 队列</h3><p>channel 实现队列主要用到了 buf、sendx、recvx、lock 四个属性</p>
+<p>下面我们假设一个队列的实现过程 </p>
+<p>第一步：使用lock锁住 hchan结构体，然后使用 send (ch &lt;- xx) 数据</p>
+<p>第二步：当发送数据到 ch 中，ch的缓冲满了的时候，队列塞不进去了</p>
+<p>第三步：开始 recv ( &lt;ch) 的过程，也就是上面send 的一个逆向的过程，当然也是需要加锁的，中间细节的加解锁就省略了</p>
+<p>注意：<code>recvx</code>和<code>sendx</code>是根据循环链表<code>buf</code>的变动而改变的</p>
+<p>这里留一个问题，为什么 hchan 中的 buf 要采用循环链表作为缓存结构呢？</p>
+<h3 id="2-5-channel-关闭"><a href="#2-5-channel-关闭" class="headerlink" title="2.5 channel 关闭"></a>2.5 channel 关闭</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">func</span> <span class="title">closechan</span><span class="params">(c *hchan)</span></span> &#123;</span><br><span class="line">	<span class="comment">// 当关闭的通道是nil时候，直接恐慌</span></span><br><span class="line">	<span class="keyword">if</span> c == <span class="literal">nil</span> &#123;</span><br><span class="line">		<span class="built_in">panic</span>(plainError(<span class="string">&quot;close of nil channel&quot;</span>))</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 加锁</span></span><br><span class="line">	lock(&amp;c.lock)</span><br><span class="line">    <span class="comment">// 通道已关闭，再次关闭直接恐慌</span></span><br><span class="line">	<span class="keyword">if</span> c.closed != <span class="number">0</span> &#123;</span><br><span class="line">		unlock(&amp;c.lock)</span><br><span class="line">		<span class="built_in">panic</span>(plainError(<span class="string">&quot;close of closed channel&quot;</span>))</span><br><span class="line">	&#125;</span><br><span class="line">    ...</span><br><span class="line">	c.closed = <span class="number">1</span> <span class="comment">// 关闭标志closed置为1</span></span><br><span class="line">	<span class="keyword">var</span> glist gList</span><br><span class="line">    <span class="comment">// 将接收者添加到glist中</span></span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		sg := c.recvq.dequeue()</span><br><span class="line">		<span class="keyword">if</span> sg == <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> sg.elem != <span class="literal">nil</span> &#123;</span><br><span class="line">			typedmemclr(c.elemtype, sg.elem)</span><br><span class="line">			sg.elem = <span class="literal">nil</span></span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> sg.releasetime != <span class="number">0</span> &#123;</span><br><span class="line">			sg.releasetime = cputicks()</span><br><span class="line">		&#125;</span><br><span class="line">		gp := sg.g</span><br><span class="line">		gp.param = <span class="literal">nil</span></span><br><span class="line">		<span class="keyword">if</span> raceenabled &#123;</span><br><span class="line">			raceacquireg(gp, c.raceaddr())</span><br><span class="line">		&#125;</span><br><span class="line">		glist.push(gp)</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">// 将发送者添加到glist中</span></span><br><span class="line">	<span class="keyword">for</span> &#123;</span><br><span class="line">		sg := c.sendq.dequeue()</span><br><span class="line">		<span class="keyword">if</span> sg == <span class="literal">nil</span> &#123;</span><br><span class="line">			<span class="keyword">break</span></span><br><span class="line">		&#125;</span><br><span class="line">		sg.elem = <span class="literal">nil</span></span><br><span class="line">		<span class="keyword">if</span> sg.releasetime != <span class="number">0</span> &#123;</span><br><span class="line">			sg.releasetime = cputicks()</span><br><span class="line">		&#125;</span><br><span class="line">		gp := sg.g</span><br><span class="line">		gp.param = <span class="literal">nil</span></span><br><span class="line">		<span class="keyword">if</span> raceenabled &#123;</span><br><span class="line">			raceacquireg(gp, c.raceaddr())</span><br><span class="line">		&#125;</span><br><span class="line">		glist.push(gp) <span class="comment">// </span></span><br><span class="line">	&#125;</span><br><span class="line">	unlock(&amp;c.lock)</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 循环glist，调用goready唤醒所有接收者和发送者</span></span><br><span class="line">	<span class="keyword">for</span> !glist.empty() &#123;</span><br><span class="line">		gp := glist.pop()</span><br><span class="line">		gp.schedlink = <span class="number">0</span></span><br><span class="line">		goready(gp, <span class="number">3</span>)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-channel-常见问题"><a href="#3-channel-常见问题" class="headerlink" title="3 channel 常见问题"></a>3 channel 常见问题</h2><h3 id="3-1-channel是同步还是异步"><a href="#3-1-channel是同步还是异步" class="headerlink" title="3.1 channel是同步还是异步"></a>3.1 channel是同步还是异步</h3><p>带缓冲Channel是异步进行的, channel存在3种状态：</p>
+<p>nil，未初始化的状态，只进行了声明，或者手动赋值为nil</p>
+<p>active，正常的channel，可读或者可写</p>
+<p>closed，已关闭，千万不要误认为关闭channel后，channel的值是nil</p>
+<h3 id="3-2-channel-规则"><a href="#3-2-channel-规则" class="headerlink" title="3.2 channel 规则"></a>3.2 channel 规则</h3><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>空Channel</th>
+<th>已关闭Channel</th>
+<th>活跃Channel</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>close(ch)</td>
+<td>panic</td>
+<td>panic</td>
+<td>成功关闭</td>
+</tr>
+<tr>
+<td>ch &lt;-v</td>
+<td>永远阻塞</td>
+<td>panic</td>
+<td>成功发送或阻塞</td>
+</tr>
+<tr>
+<td>v,ok = &lt;-ch</td>
+<td>永远阻塞</td>
+<td>不阻塞</td>
+<td>成功接收或阻塞</td>
+</tr>
+</tbody></table>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Lone</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2021/10/28/go-channel%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/">http://example.com/2021/10/28/go-channel%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2021/10/28/go-slice%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/">go slice底层原理</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Lone | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
