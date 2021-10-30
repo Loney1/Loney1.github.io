@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Lone">
+
+
+
+    <meta name="description" content="This is a blog which is order to record my learning and growth">
+
+
+
+<title>go 内存分配管理 | Loney1</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Loney1&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Loney1&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">go 内存分配管理</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Lone</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">October 30, 2021&nbsp;&nbsp;15:55:05</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="1-TCMalloc"><a href="#1-TCMalloc" class="headerlink" title="1 TCMalloc"></a>1 TCMalloc</h2><p>golang 的内存分配算法大部分来自 TCMalloc，所以想要了解 golang 内存分配，需要先了解 TCMalloc</p>
+<p>TCMalloc 是 Google 开发的内存分配算法库，最开始它是作为 Google 的一个性能工具库 perftools 的一部分，TCMalloc是用来代替传统的 malloc 内存分配函数，具有减少内存碎片，适用于多核，更好的支持并行性等特性，TC 即为 Thread Cache 两英文的简写</p>
+<p>它提供了很多的优化：</p>
+<ul>
+<li>TCMalloc用固定大小的page(页)来执行内存获取、分配等操作。这个特性跟Linux物理内存页的划分是不是有同样的道理。</li>
+<li>TCMalloc用固定大小的对象，比如8KB，16KB 等用于特定大小对象的内存分配，这对于内存获取或释放等操作都带来了简化的作用。</li>
+<li>TCMalloc还利用缓存常用对象来提高获取内存的速度。</li>
+<li>TCMalloc还可以基于每个线程或者每个CPU来设置缓存大小，这是默认设置。</li>
+<li>TCMalloc基于每个线程独立设置缓存分配策略，减少了多线程之间锁的竞争。</li>
+</ul>
+<h3 id="TCMalloc中的概念"><a href="#TCMalloc中的概念" class="headerlink" title="TCMalloc中的概念"></a>TCMalloc中的概念</h3><h4 id="Page"><a href="#Page" class="headerlink" title="Page"></a>Page</h4><p>操作系统对内存管理的单位，TCMalloc也是以页为单位管理内存，但是TCMalloc中Page大小是操作系统中页的倍数关系。2，4，8 ….</p>
+<h4 id="Span"><a href="#Span" class="headerlink" title="Span"></a>Span</h4><p>Span 是PageHeap中管理内存页的单位，它是由一组连续的Page组成，比如2个Page组成的span，多个这样的span就用链表来管理。当然，还可以有4个Page组成的span等等。</p>
+<h4 id="ThreadCache"><a href="#ThreadCache" class="headerlink" title="ThreadCache"></a>ThreadCache</h4><p>ThreadCache是每个线程各自独立拥有的cache，一个cache包含多个空闲内存链表（size classes），每一个链表（size-class）都有自己的object，每个object都是大小相同的。</p>
+<h4 id="CentralCache"><a href="#CentralCache" class="headerlink" title="CentralCache"></a>CentralCache</h4><p>CentralCache是当ThreadCache内存不足时，提供内存供其使用。它保持的是空闲块链表，链表数量和ThreadCache数量相同。ThreadCache中内存过多时，可以放回CentralCache中。</p>
+<h4 id="PageHeap"><a href="#PageHeap" class="headerlink" title="PageHeap"></a>PageHeap</h4><p>PageHeap保存的也是若干链表，不过链表保存的是Span（多个相同的page组成一个Span）。CentralCache内存不足时，可以从PageHeap获取Span，然后把Span切割成object。</p>
+<h2 id="2-go内存管理"><a href="#2-go内存管理" class="headerlink" title="2 go内存管理"></a>2 go内存管理</h2><h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><h4 id="Page-1"><a href="#Page-1" class="headerlink" title="Page"></a>Page</h4><p>与TCMalloc中的Page相同，x64下1个Page的大小是8KB。上图的最下方，1个浅蓝色的长方形代表1个Page。</p>
+<h4 id="Span-1"><a href="#Span-1" class="headerlink" title="Span"></a>Span</h4><p>与TCMalloc中的Span相同，<strong>Span是内存管理的基本单位</strong>，代码中为<code>mspan</code>，<strong>一组连续的Page组成1个Span</strong>，所以上图一组连续的浅蓝色长方形代表的是一组Page组成的1个Span，另外，1个淡紫色长方形为1个Span。</p>
+<h4 id="mcache"><a href="#mcache" class="headerlink" title="mcache"></a>mcache</h4><p>mcache与TCMalloc中的ThreadCache类似，<strong>mcache保存的是各种大小的Span，并按Span class分类，小对象直接从mcache分配内存，它起到了缓存的作用，并且可以无锁访问</strong>。</p>
+<p>但mcache与ThreadCache也有不同点，TCMalloc中是每个线程1个ThreadCache，Go中是<strong>每个P拥有1个mcache</strong>，因为在Go程序中，当前最多有GOMAXPROCS个线程在用户态运行，所以最多需要GOMAXPROCS个mcache就可以保证各线程对mcache的无锁访问，线程的运行又是与P绑定的，把mcache交给P刚刚好。</p>
+<h4 id="mcentral"><a href="#mcentral" class="headerlink" title="mcentral"></a>mcentral</h4><p>mcentral与TCMalloc中的CentralCache类似，<strong>是所有线程共享的缓存，需要加锁访问</strong>，它按Span class对Span分类，串联成链表，当mcache的某个级别Span的内存被分配光时，它会向mcentral申请1个当前级别的Span。</p>
+<p>但mcentral与CentralCache也有不同点，CentralCache是每个级别的Span有1个链表，mcache是每个级别的Span有2个链表，这和mcache申请内存有关，稍后我们再解释。</p>
+<h4 id="mheap"><a href="#mheap" class="headerlink" title="mheap"></a>mheap</h4><p>mheap与TCMalloc中的PageHeap类似，<strong>它是堆内存的抽象，把从OS申请出的内存页组织成Span，并保存起来</strong>。当mcentral的Span不够用时会向mheap申请，mheap的Span不够用时会向OS申请，向OS的内存申请是按页来的，然后把申请来的内存页生成Span组织起来，同样也是需要加锁访问的。</p>
+<p>但mheap与PageHeap也有不同点：mheap把Span组织成了树结构，而不是链表，并且还是2棵树，然后把Span分配到heapArena进行管理，它包含地址映射和span是否包含指针等位图，这样做的主要原因是为了更高效的利用内存：分配、回收和再利用。</p>
+<h3 id="大小转换"><a href="#大小转换" class="headerlink" title="大小转换"></a>大小转换</h3><p><img src="/images/go/%E5%86%85%E5%AD%98/1.png"></p>
+<ol>
+<li><p><strong>object size</strong>：代码里简称<code>size</code>，指申请内存的对象大小。</p>
+</li>
+<li><p><strong>size class</strong>：代码里简称<code>class</code>，它是size的级别，相当于把size归类到一定大小的区间段，比如size[1,8]属于size class 1，size(8,16]属于size class 2。</p>
+</li>
+<li><p><strong>span class</strong>：指span的级别，但span class的大小与span的大小并没有正比关系。span class主要用来和size class做对应，1个size class对应2个span class，2个span class的span大小相同，只是功能不同，1个用来存放包含指针的对象，一个用来存放不包含指针的对象，不包含指针对象的Span就无需GC扫描了。</p>
+</li>
+<li><p><strong>num of page</strong>：代码里简称<code>npage</code>，代表Page的数量，其实就是Span包含的页数，用来分配内存。</p>
+</li>
+</ol>
+<h2 id="3-go内存分配"><a href="#3-go内存分配" class="headerlink" title="3 go内存分配"></a>3 go内存分配</h2><p>Go中的内存分类并不像 TCMalloc 那样分成小、中、大对象，但是他的小对象里又细分了一个 Tiny 对象，<strong>Tiny对象指大小在1Byte到16Byte之间并且不包含指针的对象</strong>。小对象和大对象只用大小划分，无其他区分</p>
+<p><img src="/images/go/%E5%86%85%E5%AD%98/2.png"></p>
+<p>小对象是在 mcache 中分配的，而大对象是是直接从 mheap 中分配的，从小对象的内存分配看起</p>
+<h3 id="小对象分配"><a href="#小对象分配" class="headerlink" title="小对象分配"></a>小对象分配</h3><p><img src="/images/go/%E5%86%85%E5%AD%98/3.png"></p>
+<p>寻找 span 的流程：</p>
+<ol>
+<li>计算对象所需内存大小size</li>
+<li>根据size到size class映射，计算出所需的size class</li>
+<li>根据size class和对象是否包含指针计算出span class</li>
+<li>获取该span class指向的span。</li>
+</ol>
+<h4 id="pan没有空间怎么分配对象"><a href="#pan没有空间怎么分配对象" class="headerlink" title="pan没有空间怎么分配对象"></a>pan没有空间怎么分配对象</h4><p>span内的所有内存块都被占用时，没有剩余空间继续分配对象，mcache会向mcentral申请1个span，mcache拿到span后继续分配对象。</p>
+<h4 id="mcentral向mcache提供span"><a href="#mcentral向mcache提供span" class="headerlink" title="mcentral向mcache提供span"></a>mcentral向mcache提供span</h4><p>mcentral和mcache一样，都是0~133这134个span class级别，但每个级别都保存了2个span list，即2个span链表：</p>
+<ol>
+<li><code>nonempty</code>：这个链表里的span，所有span都至少有1个空闲的对象空间。这些span是mcache释放span时加入到该链表的。</li>
+<li><code>empty</code>：这个链表里的span，所有的span都不确定里面是否有空闲的对象空间。当一个span交给mcache的时候，就会加入到empty链表。</li>
+</ol>
+<h4 id="mheap的span管理"><a href="#mheap的span管理" class="headerlink" title="mheap的span管理"></a>mheap的span管理</h4><p>mheap里保存了2棵<strong>二叉排序树</strong>，按span的page数量进行排序：</p>
+<ol>
+<li><code>free</code>：free中保存的span是空闲并且非垃圾回收的span。</li>
+<li><code>scav</code>：scav中保存的是空闲并且已经垃圾回收的span。</li>
+</ol>
+<p>如果是垃圾回收导致的span释放，span会被加入到<code>scav</code>，否则加入到<code>free</code>，比如刚从OS申请的的内存也组成的Span。</p>
+<p>mheap中还有arenas，有一组heapArena组成，每一个heapArena都包含了连续的<code>pagesPerArena</code>个span，这个主要是为mheap管理span和垃圾回收服务。</p>
+<p>mheap本身是一个全局变量，它其中的数据，也都是从OS直接申请来的内存，并不在mheap所管理的那部分内存内。</p>
+<h4 id="mcentral向mheap要span"><a href="#mcentral向mheap要span" class="headerlink" title="mcentral向mheap要span"></a>mcentral向mheap要span</h4><p>mcentral向mcache提供span时，如果<code>emtpy</code>里也没有符合条件的span，mcentral会向mheap申请span。</p>
+<p>mcentral需要向mheap提供需要的内存页数和span class级别，然后它优先从<code>free</code>中搜索可用的span，如果没有找到，会从<code>scav</code>中搜索可用的span，如果还没有找到，它会向OS申请内存，再重新搜索2棵树，必然能找到span。如果找到的span比需求的span大，则把span进行分割成2个span，其中1个刚好是需求大小，把剩下的span再加入到<code>free</code>中去，然后设置需求span的基本信息，然后交给mcentral。</p>
+<h4 id="mheap向OS申请内存"><a href="#mheap向OS申请内存" class="headerlink" title="mheap向OS申请内存"></a>mheap向OS申请内存</h4><p>当mheap没有足够的内存时，mheap会向OS申请内存，把申请的内存页保存到span，然后把span插入到<code>free</code>树 。</p>
+<h3 id="大对象分配"><a href="#大对象分配" class="headerlink" title="大对象分配"></a>大对象分配</h3><p>大对象的分配比小对象省事多了，99%的流程与mcentral向mheap申请内存的相同，所以不重复介绍了</p>
+<h3 id="对象分配流程"><a href="#对象分配流程" class="headerlink" title="对象分配流程"></a>对象分配流程</h3><ul>
+<li>大小&gt; 32k是一个大对象，直接从mheap分配。</li>
+<li>大小&lt;16B，使用mcache的tiny分配器分配</li>
+<li>大小在16B〜32k之间，计算要使用的sizeClass，然后在mcache中使用相应的sizeClass的块分配</li>
+<li>如果与mcache对应的sizeClass没有可用的块，则向mcentral发起请求。</li>
+<li>如果mcentral也没有可用的块，则向mheap请求。mheap使用BestFit查找最合适的mspan。如果超出了申请的大小，则会根据需要进行划分，以返回用户所需的页面数。其余页面构成一个新的mspan，并返回mheap空闲列表。</li>
+<li>如果mheap没有可用的span，请向操作系统申请一组新的页（至少1MB）</li>
+</ul>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Lone</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2021/10/30/go-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%AE%A1%E7%90%86/">http://example.com/2021/10/30/go-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%AE%A1%E7%90%86/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2021/10/28/go-channel%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/">go channel底层原理</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Lone | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
