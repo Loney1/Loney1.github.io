@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Lone">
+
+
+
+    <meta name="description" content="This is a blog which is order to record my learning and growth">
+
+
+
+<title>go-gmp底层原理 | Loney1</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Loney1&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Loney1&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/categories">Categories</a>
+                
+                    <a class="menu-item" href="/tag">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">go-gmp底层原理</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Lone</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">November 28, 2021&nbsp;&nbsp;11:33:47</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="GMP构成"><a href="#GMP构成" class="headerlink" title="GMP构成"></a>GMP构成</h1><h2 id="G-goroutine-：协程"><a href="#G-goroutine-：协程" class="headerlink" title="G(goroutine)：协程"></a>G(goroutine)：协程</h2><p>go 语言特有</p>
+<h2 id="P-processor-：逻辑处理器"><a href="#P-processor-：逻辑处理器" class="headerlink" title="P(processor)：逻辑处理器"></a>P(processor)：逻辑处理器</h2><p>由启动时的环境变量 <strong>$GOMAXPROCS</strong> 决定。意味着程序在执行的任意时刻最多只有 <strong>$GOMAXPROCS</strong> 个goroutine在运行，可以通过 runtime.gomaxprocs来限制 goroutine 的数量，原理实际是限制逻辑处理器的数量</p>
+<p>在确定逻辑处理器的最大数量后，运行时系统会根据这个数量创建 n 个P</p>
+<h2 id="M-thread-：内核级线程"><a href="#M-thread-：内核级线程" class="headerlink" title="M(thread)：内核级线程"></a>M(thread)：内核级线程</h2><p>go 语言本身有限制，默认启动时是 10000，但是内核显然很难支撑如此多的线程数，所以这个限制基本上可以忽略，同样可以通过 runtime/debug中的 SetMaxThreads 函数来设置 M 的最大数量</p>
+<p>没有足够的 M 来关联 P 并运行其中可运行的 G，比如所有的 M 此时都被阻塞，而 P 中还有很多就绪的任务，就会去寻找空闲的 M，而没有空闲的，就会去创建新的 M</p>
+<h1 id="GMP调度策略"><a href="#GMP调度策略" class="headerlink" title="GMP调度策略"></a>GMP调度策略</h1><h2 id="复用线程："><a href="#复用线程：" class="headerlink" title="复用线程："></a>复用线程：</h2><p>避免频繁的创建、销毁线程，而是对线程的复用</p>
+<p><strong>1、Work stealing</strong></p>
+<p>当本线程无可运行的 G 时，会尝试从其他的线程绑定的 P 偷取 G，而不是销毁线程</p>
+<p><strong>2、hand of</strong></p>
+<p>当线程因为 G 进行系统调用时阻塞，线程释放绑定的 P，把 P 转移给其他空闲的线程去执行</p>
+<h2 id="并行："><a href="#并行：" class="headerlink" title="并行："></a>并行：</h2><p>通过 GOMAXPROCS 设置 P 的数量，最多有 GOMAXPROCS 个线程分布在多个 CPU 上同时运行。GOMAXPROCS 也限制了并发的程度，比如 GOMAXPROCS = 核数/2，则最多利用了一半的 CPU 核进行并行</p>
+<h2 id="抢占："><a href="#抢占：" class="headerlink" title="抢占："></a>抢占：</h2><p>Go 语言中，一个 goroutine 最多占用 CPU 10ms的时间，如果超过 10ms 时间没有收到，其他的 goroutine 会通过变成饥饿锁来抢占</p>
+<h1 id="GMP-的调度流程"><a href="#GMP-的调度流程" class="headerlink" title="GMP 的调度流程"></a>GMP 的调度流程</h1><p><img src="/images/go/gmp/1.png"></p>
+<p>GMP调度大概可以通过这张图分析</p>
+<h1 id="GMP的调度生命周期"><a href="#GMP的调度生命周期" class="headerlink" title="GMP的调度生命周期"></a>GMP的调度生命周期</h1><p><img src="/images/go/gmp/2.png"></p>
+<p><strong>M0：</strong>M0 是启动程序后的编号为 0 的主线程，这个 M 对应的实例会在全局变量 runtime.m0 中，不需要在 heap 上面分配， M0 负责执行初始化操作和启动第一个 G，在之后 M0 就和其他的 M 一样了</p>
+<p><strong>G0:</strong> G0 是每次启动一个 M 都会第一个创建的 goroutine， G0仅仅用于负责调度，且不指向任何可执行的函数，每个 M 都会有一个自己的 G0，在调度或者系统调用时会使用 G0 的栈空间，全局变量的 G0 是 M0 的 G0</p>
+<p>1.runtime 创建最初的线程 m0 和 goroutine g0，并把 2 者关联。<br>2.调度器初始化：初始化 m0、栈、垃圾回收，以及创建和初始化由 GOMAXPROCS 个 P 构成的 P 列表。<br>3.启动 m0，m0 已经绑定了 P，会从 P 的本地队列获取 G，获取到 main goroutine。<br>4.G 拥有栈，M 根据 G 中的栈信息和调度信息设置运行环境<br>5.M 运行 G<br>6.G 退出，再次回到 M 获取可运行的 G，这样重复下去，直到 main.main 退出，runtime.main 执行 Defer 和 Panic 处理，或调用 runtime.exit 退出程序。</p>
+<p><a target="_blank" rel="noopener" href="https://learnku.com/articles/41728">https://learnku.com/articles/41728</a> </p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Lone</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2021/11/28/go-gmp%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/">http://example.com/2021/11/28/go-gmp%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2021/10/30/go-%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%AE%A1%E7%90%86/">go 内存分配管理</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Lone | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
