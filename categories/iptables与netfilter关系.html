@@ -15,7 +15,7 @@
 
 
 
-<title>Archives: 2021/11 | Loney1</title>
+<title>iptables与netfilter关系 | Loney1</title>
 
 
 
@@ -126,22 +126,26 @@
     }
 </script>
             <div class="main">
-                <div class="post-wrap archive">
-    
-    
+                <div class="container">
+    <article class="post-wrap page">
         
+        <h2 class="post-title">iptables与netfilter关系</h2>
+        
+        <section class="post-content">
+            <h2 id="一、iptable与netfilter"><a href="#一、iptable与netfilter" class="headerlink" title="一、iptable与netfilter"></a>一、iptable与netfilter</h2><p>1、Netfilter由Rusty Russell提出的Linux 2.4内核防火墙框架, 可用于实现安全策略应用中的许多功能, 数据过滤、数据包处理、地址伪装、透明代理、<strong>动态地址转换</strong>、包速率限制以及基于媒体访问控制地址的过滤和基于状态的过滤等等. Iptables作为与netfilter联系供我们大家使用的工具, 可以灵活组合形成非常多的功能、涵盖各个方面</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">**Netfilter是Linux操作系统核心层内部的一个数据包处理模块, 它具有如下功能：**</span><br><span class="line"></span><br><span class="line">1、网络地址转换</span><br><span class="line"></span><br><span class="line">2、数据包内容修改</span><br><span class="line"></span><br><span class="line">3、数据包过滤防火墙</span><br></pre></td></tr></table></figure>
 
-        
-            <h3>2021</h3>
-        
+<p>2、Netfilter 平台制定了数据包的<strong>五个挂载点</strong> (Hook Point, 可以理解为回调函数、数据包到达这些位置的时候会<strong>主动调用</strong>我们的函数，使我们有机会能在数据包路由的时候改变它们的<strong>方向、内容</strong>)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">这五个挂载点分别是</span><br><span class="line"></span><br><span class="line">PRE_ROUTING、INPUT、OUTPUT、FORWARD、POST_ROUTING</span><br></pre></td></tr></table></figure>
 
-        <article class="archive-item">
-            <a class="archive-item-link" href="/2021/11/28/go-gmp%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/">go-gmp底层原理</a>
-            <span class="archive-item-date">November 28, 2021</span>
-        </article>
-    
-    
+<p><img src="/images/Iptables/1.jpg"></p>
+<p>3、Netfilter 所设置的规则是存放在内核内存中的, 而 Iptables 是一个应用层的应用程序, 它通过 Netfilter 放出的接口来对存放在内核内存中的 XXtables (Netfilter的配置表) 进行修改. 这个 XXtables 由表 tables、链 chains、规则 rules 组成, iptables在应用层负责修改这个规则文件、类似的应用程序还有 firewalld</p>
+<p><img src="/images/Iptables/2.jpg"></p>
+
+        </section>
+    </article>
 </div>
+
             </div>
             <footer id="footer" class="footer">
     <div class="copyright">
